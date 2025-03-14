@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barangay Complaint Management System</title>
+    <style>
+        /* General Styling */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styling */
+        header {
+            background-color: #0466c8;
+            color: white;
+            padding: 20px 0;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .menu {
+            display: flex;
+            list-style: none;
+        }
+        
+        .menu li {
+            margin-left: 20px;
+        }
+        
+        .menu a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .menu a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Main Content */
+        main {
+            padding: 40px 0;
+        }
+        
+        .hero {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+        
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: #0466c8;
+        }
+        
+        .hero p {
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: #0466c8;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+        
+        .btn:hover {
+            background-color: #0353a4;
+        }
+        
+        /* Dashboard Layouts */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar h3 {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .sidebar ul {
+            list-style: none;
+        }
+        
+        .sidebar li {
+            margin-bottom: 10px;
+        }
+        
+        .sidebar a {
+            color: #333;
+            text-decoration: none;
+            display: block;
+            padding: 8px 10px;
+            border-radius: 5px;
+        }
+        
+        .sidebar a:hover {
+            background-color: #f0f0f0;
+            color: #0466c8;
+        }
+        
+        .content-area {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            height: 150px;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        /* Cards */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        
+        .card h3 {
+            color: #0466c8;
+            margin-bottom: 10px;
+        }
+        
+        /* Notification styling */
+        .notification-badge {
+            background-color: #e63946;
+            color: white;
+            font-size: 12px;
+            padding: 2px 6px;
+            border-radius: 50%;
+            margin-left: 5px;
+        }
+        
+        /* Footer */
+        footer {
+            background-color: #333;
+            color: white;
+            padding: 30px 0;
+            margin-top: 40px;
+        }
+        
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .footer-section {
+            flex: 1;
+            margin-right: 20px;
+            min-width: 200px;
+        }
+        
+        .footer-section h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #555;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+            }
+            
+            .footer-section {
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">BCMS</div>
+                <ul class="menu">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#submit">Submit Complaint</a></li>
+                    <li><a href="#track">Track Complaint</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#login">Login</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <h1>Barangay Complaint Management System</h1>
+            <p>A streamlined platform for residents to submit, track, and resolve community concerns efficiently.</p>
+            <a href="#submit" class="btn">Submit a Complaint</a>
+        </section>
+
+        <!-- Resident Dashboard -->
+        <section id="resident-dashboard" class="dashboard">
+            <div class="sidebar">
+                <h3>Resident Dashboard</h3>
+                <ul>
+                    <li><a href="#profile">My Profile</a></li>
+                    <li><a href="#my-complaints">My Complaints</a></li>
+                    <li><a href="#submit">Submit New Complaint</a></li>
+                    <li><a href="#messages">Messages <span class="notification-badge">3</span></a></li>
+                    <li><a href="#notifications">Notifications <span class="notification-badge">5</span></a></li>
+                    <li><a href="#feedback">Provide Feedback</a></li>
+                </ul>
+            </div>
+            <div class="content-area">
+                <h2>My Complaints</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Tracking ID</th>
+                            <th>Title</th>
+                            <th>Date Submitted</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>BCMS-2025-001</td>
+                            <td>Broken Street Light</td>
+                            <td>Mar 10, 2025</td>
+                            <td>In Progress</td>
+                            <td><a href="#view">View Details</a></td>
+                        </tr>
+                        <tr>
+                            <td>BCMS-2025-002</td>
+                            <td>Garbage Collection Issue</td>
+                            <td>Mar 5, 2025</td>
+                            <td>Resolved</td>
+                            <td><a href="#view">View Details</a></td>
+                        </tr>
+                        <tr>
+                            <td>BCMS-2025-003</td>
+                            <td>Noisy Neighbor</td>
+                            <td>Feb 28, 2025</td>
+                            <td>Escalated</td>
+                            <td><a href="#view">View Details</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Submit Complaint Form -->
+        <section id="submit" class="content-area" style="margin-top: 40px;">
+            <h2>Submit a New Complaint</h2>
+            <form>
+                <div class="form-group">
+                    <label for="title">Complaint Title</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select id="category" name="category" required>
+                        <option value="">Select a category</option>
+                        <option value="infrastructure">Infrastructure</option>
+                        <option value="sanitation">Sanitation</option>
+                        <option value="noise">Noise Complaint</option>
+                        <option value="security">Security Concern</option>
+                        <option value="others">Others</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="urgency">Urgency Level</label>
+                    <select id="urgency" name="urgency" required>
+                        <option value="">Select urgency level</option>
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="emergency">Emergency</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="attachment">Attachments (Photos, Documents)</label>
+                    <input type="file" id="attachment" name="attachment" multiple>
+                </div>
+                <button type="submit" class="btn">Submit Complaint</button>
+            </form>
+        </section>
+
+        <!-- Officer Dashboard (Hidden for non-officers) -->
+        <section id="officer-dashboard" class="dashboard" style="margin-top: 40px; display: none;">
+            <div class="sidebar">
+                <h3>Officer Dashboard</h3>
+                <ul>
+                    <li><a href="#profile">My Profile</a></li>
+                    <li><a href="#pending">Pending Complaints</a></li>
+                    <li><a href="#assigned">Assigned to Me</a></li>
+                    <li><a href="#resolved">Resolved Complaints</a></li>
+                    <li><a href="#escalated">Escalated Complaints</a></li>
+                    <li><a href="#reports">Reports</a></li>
+                    <li><a href="#messages">Messages</a></li>
+                </ul>
+            </div>
+            <div class="content-area">
+                <h2>Pending Complaints</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Complaint ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Date Submitted</th>
+                            <th>Urgency</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>BCMS-2025-004</td>
+                            <td>Pothole on Main Street</td>
+                            <td>Infrastructure</td>
+                            <td>Mar 12, 2025</td>
+                            <td>High</td>
+                            <td>
+                                <a href="#assign">Assign</a> | 
+                                <a href="#view">View</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>BCMS-2025-005</td>
+                            <td>Water Supply Issue</td>
+                            <td>Utilities</td>
+                            <td>Mar 11, 2025</td>
+                            <td>Emergency</td>
+                            <td>
+                                <a href="#assign">Assign</a> | 
+                                <a href="#view">View</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="card-grid" style="margin-top: 40px;">
+            <div class="card">
+                <h3>Complaint Statistics</h3>
+                <p>Total complaints: 125</p>
+                <p>Resolved: 89</p>
+                <p>In progress: 28</p>
+                <p>Escalated: 8</p>
+            </div>
+            <div class="card">
+                <h3>Resolution Time</h3>
+                <p>Average resolution time: 5.2 days</p>
+                <p>Fastest resolution: 4 hours</p>
+                <p>Currently pending: 28</p>
+            </div>
+            <div class="card">

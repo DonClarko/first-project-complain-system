@@ -56,14 +56,14 @@ nav {
     text-decoration: underline;
 }
 
-.btn-login {
+.btn-logout {
     background-color: #e63946;
     padding: 8px 16px;
     border-radius: 5px;
     transition: background-color 0.3s;
 }
 
-.btn-login:hover {
+.btn-logout:hover {
     background-color: #d62828;
 }
 

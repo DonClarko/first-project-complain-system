@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import json
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -53,6 +53,12 @@ def login():
             return redirect(url_for('official_dashboard'))
             
     
+    return redirect(url_for('auth.show_auth', form_type='login'))
+
+@auth_bp.route('/logout')
+def logout():
+    # Clear the user session (you'll need to implement proper session handling)
+    # For now, we'll just redirect to the login page
     return redirect(url_for('auth.show_auth', form_type='login'))
 
 @auth_bp.route('/signup', methods=['POST'])

@@ -32,7 +32,6 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         role = request.form.get('role', 'resident')
-        remember = True if request.form.get('remember') else False
         
         users = load_users()
         user = users.get(email)
@@ -46,8 +45,13 @@ def login():
             return redirect(url_for('auth.show_auth', form_type='login'))
         
         flash('Login successful!', 'success')
-        # In a real app, you would login_user here and redirect to dashboard
-        return redirect(url_for('home'))
+        
+        # Redirect based on role
+        if role == 'resident':
+            return redirect(url_for('resident_dashboard'))
+        else:
+            return redirect(url_for('official_dashboard'))
+            
     
     return redirect(url_for('auth.show_auth', form_type='login'))
 

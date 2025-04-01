@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barangay Officials Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/barangayofficialsdashboard.css') }}">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">BCCMS</div>
+                <ul class="menu">
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#complaints">Complaints</a></li>
+                    <li><a href="#reports">Reports</a></li>
+                    <li><a href="#settings">Settings</a></li>
+                    <li><a href="{{ url_for('auth.logout') }}" class="btn-logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Dashboard Overview -->
+        <section id="dashboard" class="dashboard">
+            <h1>Barangay Officials Dashboard</h1>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Complaints</h3>
+                    <p class="stat-number">142</p>
+                    <p class="stat-change">↑ 12% from last month</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Pending</h3>
+                    <p class="stat-number">28</p>
+                    <p class="stat-urgent">5 urgent</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Resolved</h3>
+                    <p class="stat-number">89</p>
+                    <p class="stat-change">↑ 8% from last month</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg. Resolution Time</h3>
+                    <p class="stat-number">3.2 days</p>
+                    <p class="stat-change">↓ 0.5 days from last month</p>
+                </div>
+            </div>
+
+            <!-- Complaint Management -->
+            <div class="complaint-management">
+                <div class="sidebar">
+                    <h3>Quick Actions</h3>
+                    <ul>
+                        <li><a href="#new-complaints">New Complaints (5)</a></li>
+                        <li><a href="#pending">Pending Review (12)</a></li>
+                        <li><a href="#in-progress">In Progress (8)</a></li>
+                        <li><a href="#escalated">Escalated (3)</a></li>
+                        <li><a href="#generate-report">Generate Report</a></li>
+                        <li><a href="#settings">Settings</a></li>
+                    </ul>
+                </div>
+
+                <div class="content-area">
+                    <h2>Recent Complaints</h2>
+                    <table class="complaints-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Submitted</th>
+                                <th>Resident</th>
+                                <th>Status</th>
+                                <th>Urgency</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>BCMS-2025-045</td>
+                                <td>Noise</td>
+                                <td>Today</td>
+                                <td>Juan Dela Cruz</td>
+                                <td><span class="status new">New</span></td>
+                                <td><span class="urgency high">High</span></td>
+                                <td>
+                                    <a href="#view" class="btn-action">View</a>
+                                    <a href="#assign" class="btn-action">Assign</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>BCMS-2025-044</td>
+                                <td>Garbage</td>
+                                <td>Yesterday</td>
+                                <td>Maria Santos</td>
+                                <td><span class="status pending">Pending</span></td>
+                                <td><span class="urgency medium">Medium</span></td>
+                                <td>
+                                    <a href="#view" class="btn-action">View</a>
+                                    <a href="#update" class="btn-action">Update</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>BCMS-2025-043</td>
+                                <td>Road</td>
+                                <td>2 days ago</td>
+                                <td>Pedro Reyes</td>
+                                <td><span class="status in-progress">In Progress</span></td>
+                                <td><span class="urgency high">High</span></td>
+                                <td>
+                                    <a href="#view" class="btn-action">View</a>
+                                    <a href="#escalate" class="btn-action">Escalate</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="action-panel">
+                        <h3>Quick Actions</h3>
+                        <div class="action-buttons">
+                            <a href="#new-complaint" class="btn-primary">Process New Complaints</a>
+                            <a href="#generate-report" class="btn-secondary">Generate Weekly Report</a>
+                            <a href="#meeting" class="btn-secondary">Schedule Meeting</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Barangay Complaint Management System | Official Dashboard</p>
+        </div>
+    </footer>
+</body>
+</html>

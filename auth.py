@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 import json
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -19,6 +19,37 @@ def save_users(users):
     with open(USERS_FILE, 'w') as f:
         json.dump(users, f, indent=4)
 
+def create_default_admin():
+    users_file = 'users.json'
+    users = {}
+    
+    # Load existing users if file exists
+    if os.path.exists(users_file):
+        with open(users_file, 'r') as f:
+            users = json.load(f)
+    
+    # Check if admin account already exists
+    admin_email = 'admin01-barangay@gmail.com'
+    if admin_email not in users:
+        # Create admin account
+        users[admin_email] = {
+            'full_name': 'Barangay Admin',
+            'email': admin_email,
+            'phone': '09123456789',
+            'password': generate_password_hash('admin123'),
+            'role': 'official',  # This will work with your existing code
+            'created_at': datetime.now().isoformat(),
+            'is_admin': True  # Additional flag to identify admin users
+        }
+        
+        # Save to file
+        with open(users_file, 'w') as f:
+            json.dump(users, f, indent=4)
+        
+        print("Default admin account created successfully!")
+    else:
+        print("Admin account already exists")
+
 @auth_bp.route('/<form_type>')
 def show_auth(form_type):
     # Validate form_type
@@ -26,40 +57,39 @@ def show_auth(form_type):
         form_type = 'login'
     return render_template('auth.html', form_type=form_type)
 
+
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        role = request.form.get('role', 'resident')
-        
-        users = load_users()
-        user = users.get(email)
-        
-        if not user or not check_password_hash(user['password'], password):
-            flash('Invalid email or password', 'error')
-            return redirect(url_for('auth.show_auth', form_type='login'))
-        
-        if user['role'] != role:
-            flash(f'Please login as {user["role"]}', 'error')
-            return redirect(url_for('auth.show_auth', form_type='login'))
-        
-        flash('Login successful!', 'success')
-        
-        # Redirect based on role
-        if role == 'resident':
-            return redirect(url_for('resident_dashboard'))
-        else:
-            return redirect(url_for('official_dashboard'))
+        if request.method == 'POST':
+            email = request.form.get('email')
+            password = request.form.get('password')
+            role = request.form.get('role', 'resident')
             
-    
-    return redirect(url_for('auth.show_auth', form_type='login'))
-
-@auth_bp.route('/logout')
-def logout():
-    # Clear the user session (you'll need to implement proper session handling)
-    # For now, we'll just redirect to the login page
-    return redirect(url_for('auth.show_auth', form_type='login'))
+            users = load_users()
+            user = users.get(email)
+            
+            if not user or not check_password_hash(user['password'], password):
+                flash('Invalid email or password', 'error')
+                return redirect(url_for('auth.show_auth', form_type='login'))
+            
+            # Admin handling
+            if user.get('is_admin', False):
+                flash('Login successful!', 'success')
+                return redirect(url_for('admin_dashboard'))
+            
+            if user['role'] != role:
+                flash(f'Please login as {user["role"]}', 'error')
+                return redirect(url_for('auth.show_auth', form_type='login'))
+            
+            flash('Login successful!', 'success')
+            
+            # Redirect based on role
+            if role == 'resident':
+                return redirect(url_for('resident_dashboard'))
+            else:
+                return redirect(url_for('official_dashboard'))
+        
+        return redirect(url_for('auth.show_auth', form_type='login'))
 
 @auth_bp.route('/signup', methods=['POST'])
 def signup():

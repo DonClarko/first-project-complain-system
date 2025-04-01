@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admindashboard.css') }}">
+</head>
+<body>
+    <!-- Header Navigation -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">BCCMS Admin</div>
+                <ul class="menu">
+                    <li><a href="#dashboard" class="active">Dashboard</a></li>
+                    <li><a href="#residents">Residents</a></li>
+                    <li><a href="#officials">Officials</a></li>
+                    <li><a href="#complaints">Complaints</a></li>
+                    <li><a href="#settings">Settings</a></li>
+                    <li><a href="{{ url_for('auth.show_auth', form_type='login') }}" class="btn-logout">Logout</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Welcome Section -->
+        <section class="hero">
+            <h1>Admin Dashboard</h1>
+            <p>Welcome back, Admin! Manage your barangay services efficiently.</p>
+        </section>
+
+        <!-- Dashboard Stats -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon residents">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Residents</h3>
+                    <p class="count">1,245</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon officials">
+                    <i class="fas fa-user-tie"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Barangay Officials</h3>
+                    <p class="count">15</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon pending">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Pending Requests</h3>
+                    <p class="count">24</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon events">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>Upcoming Events</h3>
+                    <p class="count">8</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Dashboard Layout -->
+        <section id="admin-dashboard" class="dashboard">
+            <div class="sidebar">
+                <h3>Quick Navigation</h3>
+                <ul>
+                    <li><a href="#dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                    <li><a href="#residents"><i class="fas fa-users"></i> Residents</a></li>
+                    <li><a href="#officials"><i class="fas fa-user-tie"></i> Officials</a></li>
+                    <li><a href="#documents"><i class="fas fa-file-alt"></i> Documents</a></li>
+                    <li><a href="#complaints"><i class="fas fa-comment-alt"></i> Complaints <span class="notification-badge">24</span></a></li>
+                    <li><a href="#events"><i class="fas fa-calendar-alt"></i> Events</a></li>
+                    <li><a href="#announcements"><i class="fas fa-bullhorn"></i> Announcements</a></li>
+                    <li><a href="#analytics"><i class="fas fa-chart-line"></i> Analytics</a></li>
+                    <li><a href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </div>
+            <div class="content-area">
+                <div class="section-header">
+                    <h2>Recent Activity</h2>
+                    <a href="#" class="view-all">View All</a>
+                </div>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon new-user">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p>New resident registered</p>
+                            <span class="timestamp">5 minutes ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon document">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p>Document request approved</p>
+                            <span class="timestamp">1 hour ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon event">
+                            <i class="fas fa-calendar-plus"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p>New event scheduled</p>
+                            <span class="timestamp">3 hours ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon settings">
+                            <i class="fas fa-cog"></i>
+                        </div>
+                        <div class="activity-details">
+                            <p>System settings updated</p>
+                            <span class="timestamp">Yesterday</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Complaints Management Section -->
+        <section class="content-area" style="margin-top: 40px;">
+            <div class="section-header">
+                <h2>Complaint Management</h2>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tracking ID</th>
+                        <th>Title</th>
+                        <th>Resident</th>
+                        <th>Date Submitted</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>BCMS-2025-001</td>
+                        <td>Broken Street Light</td>
+                        <td>Juan Dela Cruz</td>
+                        <td>Mar 10, 2025</td>
+                        <td><span class="status in-progress">In Progress</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>BCMS-2025-002</td>
+                        <td>Garbage Collection Issue</td>
+                        <td>Maria Santos</td>
+                        <td>Mar 5, 2025</td>
+                        <td><span class="status resolved">Resolved</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>BCMS-2025-003</td>
+                        <td>Noisy Neighbor</td>
+                        <td>Pedro Reyes</td>
+                        <td>Feb 28, 2025</td>
+                        <td><span class="status escalated">Escalated</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- User Management Section -->
+        <section class="content-area" style="margin-top: 40px;">
+            <div class="section-header">
+                <h2>User Management</h2>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Juan Dela Cruz</td>
+                        <td>juan@example.com</td>
+                        <td><span class="role resident">Resident</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Maria Santos</td>
+                        <td>maria@example.com</td>
+                        <td><span class="role official">Official</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Pedro Reyes</td>
+                        <td>pedro@example.com</td>
+                        <td><span class="role resident">Resident</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Barangay Admin</td>
+                        <td>admin01-barangay@gmail.com</td>
+                        <td><span class="role admin">Admin</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn delete"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="card-grid" style="margin-top: 40px;">
+            <div class="card">
+                <h3>Complaint Analytics</h3>
+                <p>Total complaints: 125</p>
+                <p>Resolved: 89 (71%)</p>
+                <p>In progress: 28 (22%)</p>
+                <p>Escalated: 8 (7%)</p>
+            </div>
+            <div class="card">
+                <h3>Resolution Metrics</h3>
+                <p>Average resolution time: 5.2 days</p>
+                <p>Fastest resolution: 4 hours</p>
+                <p>Currently pending: 28</p>
+                <p>SLA compliance rate: 94%</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-section">
+                <h3>About BCCMS</h3>
+                <p>A digital platform for efficient complaint management in the barangay.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#residents">Residents</a></li>
+                    <li><a href="#complaints">Complaints</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: admin@bccms.com</p>
+                <p>Phone: +63 123 456 7890</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Barangay Complaint Management System. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

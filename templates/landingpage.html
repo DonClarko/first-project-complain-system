@@ -21,7 +21,7 @@
                     <li><a href="#users">Target Users</a></li>
                     <li><a href="#workflow">Workflow</a></li>
                     <li><a href="#sdg">SDG Impact</a></li>
-                    <li><a href="auth.html" class="btn">Get Started</a></li>
+                    <li><a href="{{ url_for('auth.show_auth', form_type='login') }}" class="btn">Get Started</a></li>
                 </ul>
             </nav>
         </div>
@@ -252,7 +252,7 @@
         <div class="container">
             <h2>Empower Your Barangay Today</h2>
             <p>Join the digital transformation of local governance. Implement BaranGuide to enhance transparency, efficiency, and community engagement in your barangay.</p>
-            <a href="Loginpage.html" class="btn">Request a Demo</a>
+            <a href="{{ url_for('auth.show_auth', form_type='signup') }}" class="btn">Request a Demo</a>
         </div>
     </section>
 

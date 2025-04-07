@@ -1,14 +1,17 @@
 from flask import Flask, render_template
 from auth import auth_bp, create_default_admin
 
+
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
 
-# Register Blueprint
+# Register Blueprints
 app.register_blueprint(auth_bp, url_prefix='/auth')
+
 
 create_default_admin()
 
+# ... rest of your routes ...
 @app.route('/')
 def home():
     return render_template('landingpage.html')

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Complaint Management System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/residentdashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <!-- Header Navigation -->
@@ -14,208 +15,568 @@
                 <div class="logo">BCCMS</div>
                 <ul class="menu">
                     <li><a href="#home">Home</a></li>
-                    <li><a href="#submit">Submit Complaint</a></li>
-                    <li><a href="#track">Track Complaint</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="{{ url_for('auth.show_auth', form_type='login') }}" class="btn-logout">Logout</a></li>
+                    <li><a href="#my-complaints">My Complaints</a></li>
+                    <li><a href="#messages">Messages</a></li>
+                    <li><a href="#notifications">Notifications</a></li>
+                    <li class="user-menu">
+                        <a href="#profile"><i class="fas fa-user-circle"></i> Profile</a>
+                        <div class="dropdown-content">
+                            <a href="#profile"><i class="fas fa-user"></i> My Profile</a>
+                            <a href="#feedback"><i class="fas fa-comment-alt"></i> Provide Feedback</a>
+                            <a href="{{ url_for('auth.show_auth', form_type='login') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </li>
                 </ul>
+                <div class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
             </nav>
         </div>
     </header>
 
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="#home">Home</a>
+        <a href="#my-complaints">My Complaints</a>
+        <a href="#messages">Messages</a>
+        <a href="#notifications">Notifications</a>
+        <a href="#profile">Profile</a>
+        <a href="#feedback">Feedback</a>
+        <a href="{{ url_for('auth.show_auth', form_type='login') }}">Logout</a>
+    </div>
+
     <!-- Main Content -->
     <main class="container">
-        <!-- Hero Section -->
-        <section class="hero" id="home">
-            <h1>Barangay Complaint Management System</h1>
-            <p>A streamlined platform for residents to submit, track, and resolve community concerns efficiently.</p>
-            <a href="#submit" class="btn">Submit a Complaint</a>
+        <!-- Welcome Section -->
+        <section id="home" class="welcome-section">
+            <div class="welcome-content">
+                <h1>Welcome to Barangay Complaint System</h1>
+                <p>Submit and track your community concerns in one place</p>
+                <a href="#" id="submit-complaint-btn" class="btn-primary">
+                    <i class="fas fa-plus-circle"></i> Submit New Complaint
+                </a>
+            </div>
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <h3>Open Cases</h3>
+                    <p class="stat-number">28</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Resolved</h3>
+                    <p class="stat-number">89</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg. Resolution</h3>
+                    <p class="stat-number">5.2 days</p>
+                </div>
+            </div>
         </section>
 
-<!-- Resident Dashboard -->
-<section id="resident-dashboard" class="dashboard" style="margin-top: 40px;">
-    <div class="sidebar">
-        <h3>Resident Dashboard</h3>
-        <ul>
-            <li><a href="#profile">My Profile</a></li>
-            <li><a href="#my-complaints">My Complaints</a></li>
-            <li><a href="#submit">Submit New Complaint</a></li>
-            <li><a href="#messages">Messages <span class="notification-badge">3</span></a></li>
-            <li><a href="#notifications">Notifications <span class="notification-badge">5</span></a></li>
-            <li><a href="#feedback">Provide Feedback</a></li>
-        </ul>
-    </div>
-    <div class="content-area">
-        <h2>My Complaints</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Tracking ID</th>
-                    <th>Title</th>
-                    <th>Date Submitted</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>BCMS-2025-001</td>
-                    <td>Broken Street Light</td>
-                    <td>Mar 10, 2025</td>
-                    <td><span class="status in-progress">In Progress</span></td>
-                    <td><a href="#view" class="btn-view">View Details</a></td>
-                </tr>
-                <tr>
-                    <td>BCMS-2025-002</td>
-                    <td>Garbage Collection Issue</td>
-                    <td>Mar 5, 2025</td>
-                    <td><span class="status resolved">Resolved</span></td>
-                    <td><a href="#view" class="btn-view">View Details</a></td>
-                </tr>
-                <tr>
-                    <td>BCMS-2025-003</td>
-                    <td>Noisy Neighbor</td>
-                    <td>Feb 28, 2025</td>
-                    <td><span class="status escalated">Escalated</span></td>
-                    <td><a href="#view" class="btn-view">View Details</a></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</section>
-
-        <!-- Submit Complaint Form -->
-        <section id="submit" class="content-area" style="margin-top: 40px;">
-            <h2>Barangay Resident Complaint Form</h2>
-            <form>
-                <!-- Barangay Name and Date Filed (Auto-filled) -->
-                <div class="form-group">
-                    <label for="barangay-name">📍 Barangay Name</label>
-                    <input type="text" id="barangay-name" name="barangay-name" value="Barangay San Juan" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="date-filed">📅 Date Filed</label>
-                    <input type="text" id="date-filed" name="date-filed" value="October 10, 2023" readonly>
-                </div>
-
-                <!-- Resident Information (Optional if Anonymous) -->
-                <div class="form-group">
-                    <h3>Resident Information (Optional if Anonymous)</h3>
-                    <label for="full-name">Full Name</label>
-                    <input type="text" id="full-name" name="full-name" placeholder="Enter your full name">
-                </div>
-                <div class="form-group">
-                    <label for="contact-number">Contact Number</label>
-                    <input type="tel" id="contact-number" name="contact-number" placeholder="Enter your contact number">
-                </div>
-                <div class="form-group">
-                    <label for="email">Email Address (if applicable)</label>
-                    <input type="email" id="email" name="email" placeholder="Enter your email address">
-                </div>
-                <div class="form-group">
-                    <label for="address">Home Address</label>
-                    <input type="text" id="address" name="address" placeholder="Enter your home address">
-                </div>
-
-                <!-- Complaint Details -->
-                <div class="form-group">
-                    <h3>Complaint Details</h3>
-                    <label>Category of Complaint</label>
-                    <div class="checkbox-group">
-                        <label><input type="radio" name="category" value="noise"> Noise Disturbance</label>
-                        <label><input type="radio" name="category" value="waste"> Waste Management</label>
-                        <label><input type="radio" name="category" value="road"> Road Repair</label>
-                        <label><input type="radio" name="category" value="water"> Water Supply Issue</label>
-                        <label><input type="radio" name="category" value="security"> Safety/Security Concern</label>
-                        <label><input type="radio" name="category" value="others"> Other: <input type="text" name="other-category" placeholder="Specify"></label>
+        <!-- Recent Complaints Section -->
+        <section id="my-complaints" class="complaints-section">
+            <div class="section-header">
+                <h2>Your Recent Complaints</h2>
+                <a href="#all-complaints" class="btn-link">View All</a>
+            </div>
+            <div class="complaints-grid">
+                <div class="complaint-card">
+                    <div class="complaint-header">
+                        <span class="complaint-id">BCMS-2025-001</span>
+                        <span class="status-badge in-progress">In Progress</span>
+                    </div>
+                    <h3 class="complaint-title">Broken Street Light</h3>
+                    <p class="complaint-date"><i class="far fa-calendar-alt"></i> Submitted: Mar 10, 2025</p>
+                    <p class="complaint-location"><i class="fas fa-map-marker-alt"></i> San Juan Street</p>
+                    <div class="complaint-actions">
+                        <a href="#view" class="btn-view"><i class="fas fa-eye"></i> View Details</a>
+                        <a href="#message" class="btn-message"><i class="fas fa-envelope"></i> Message</a>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="description">Complaint Description</label>
-                    <textarea id="description" name="description" placeholder="Provide details of the issue, location, and any relevant context" required></textarea>
+                
+                <div class="complaint-card">
+                    <div class="complaint-header">
+                        <span class="complaint-id">BCMS-2025-002</span>
+                        <span class="status-badge resolved">Resolved</span>
+                    </div>
+                    <h3 class="complaint-title">Garbage Collection Issue</h3>
+                    <p class="complaint-date"><i class="far fa-calendar-alt"></i> Submitted: Mar 5, 2025</p>
+                    <p class="complaint-location"><i class="fas fa-map-marker-alt"></i> Market Area</p>
+                    <div class="complaint-actions">
+                        <a href="#view" class="btn-view"><i class="fas fa-eye"></i> View Details</a>
+                        <a href="#feedback" class="btn-feedback"><i class="fas fa-comment-alt"></i> Give Feedback</a>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="incident-date">📆 Date of Incident</label>
-                    <input type="date" id="incident-date" name="incident-date">
+                
+                <div class="complaint-card">
+                    <div class="complaint-header">
+                        <span class="complaint-id">BCMS-2025-003</span>
+                        <span class="status-badge escalated">Escalated</span>
+                    </div>
+                    <h3 class="complaint-title">Noisy Neighbor</h3>
+                    <p class="complaint-date"><i class="far fa-calendar-alt"></i> Submitted: Feb 28, 2025</p>
+                    <p class="complaint-location"><i class="fas fa-map-marker-alt"></i> Block 5, Lot 12</p>
+                    <div class="complaint-actions">
+                        <a href="#view" class="btn-view"><i class="fas fa-eye"></i> View Details</a>
+                        <a href="#message" class="btn-message"><i class="fas fa-envelope"></i> Message</a>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="incident-time">⏰ Time of Incident</label>
-                    <input type="time" id="incident-time" name="incident-time">
-                </div>
-                <div class="form-group">
-                    <label for="location">Location of the Incident</label>
-                    <input type="text" id="location" name="location" placeholder="Enter the location of the incident">
-                </div>
-
-                <!-- Attachments -->
-                <div class="form-group">
-                    <h3>Attachments (Optional)</h3>
-                    <label for="attachment">📎 Upload files related to your complaint (e.g., pictures, videos, documents)</label>
-                    <input type="file" id="attachment" name="attachment" multiple>
-                </div>
-
-                <!-- Resolution Expectation -->
-                <div class="form-group">
-                    <label for="resolution-expectation">Resolution Expectation (Optional)</label>
-                    <textarea id="resolution-expectation" name="resolution-expectation" placeholder="What action do you expect from the barangay?"></textarea>
-                </div>
-
-                <!-- Declaration -->
-                <div class="form-group">
-                    <h3>Declaration</h3>
-                    <label>
-                        <input type="checkbox" name="declaration" required>
-                        ☑ I confirm that the information provided above is accurate to the best of my knowledge.
-                    </label>
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" class="btn">Submit Complaint</button>
-            </form>
+            </div>
         </section>
 
-        <!-- Stats Section -->
-        <section class="card-grid" style="margin-top: 40px;">
-            <div class="card">
-                <h3>Complaint Statistics</h3>
-                <p>Total complaints: 125</p>
-                <p>Resolved: 89</p>
-                <p>In progress: 28</p>
-                <p>Escalated: 8</p>
+        <!-- Messages Section -->
+        <section id="messages" class="messages-section">
+            <div class="section-header">
+                <h2><i class="fas fa-envelope"></i> Messages</h2>
+                <span class="notification-count">3</span>
             </div>
-            <div class="card">
-                <h3>Resolution Time</h3>
-                <p>Average resolution time: 5.2 days</p>
-                <p>Fastest resolution: 4 hours</p>
-                <p>Currently pending: 28</p>
+            <div class="messages-list">
+                <div class="message-card unread">
+                    <div class="message-sender">
+                        <div class="sender-avatar">
+                            <i class="fas fa-user-tie"></i>
+                        </div>
+                        <div class="sender-info">
+                            <h3>Barangay Captain</h3>
+                            <p class="message-preview">Regarding your complaint about street lights...</p>
+                        </div>
+                    </div>
+                    <div class="message-meta">
+                        <span class="message-time">2 hours ago</span>
+                        <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                    </div>
+                </div>
+                
+                <div class="message-card">
+                    <div class="message-sender">
+                        <div class="sender-avatar">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="sender-info">
+                            <h3>Barangay Secretary</h3>
+                            <p class="message-preview">We've received your complaint about garbage...</p>
+                        </div>
+                    </div>
+                    <div class="message-meta">
+                        <span class="message-time">1 day ago</span>
+                        <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                    </div>
+                </div>
+                
+                <div class="message-card">
+                    <div class="message-sender">
+                        <div class="sender-avatar">
+                            <i class="fas fa-headset"></i>
+                        </div>
+                        <div class="sender-info">
+                            <h3>Support Team</h3>
+                            <p class="message-preview">Thank you for your feedback on our services...</p>
+                        </div>
+                    </div>
+                    <div class="message-meta">
+                        <span class="message-time">3 days ago</span>
+                        <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="section-footer">
+                <a href="#all-messages" class="btn-secondary">View All Messages</a>
+            </div>
+        </section>
+
+        <!-- Notifications Section -->
+        <section id="notifications" class="notifications-section">
+            <div class="section-header">
+                <h2><i class="fas fa-bell"></i> Notifications</h2>
+                <span class="notification-count">5</span>
+            </div>
+            <div class="notifications-list">
+                <div class="notification-card unread">
+                    <div class="notification-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h3>Complaint Resolved</h3>
+                        <p>Your complaint about garbage collection has been resolved.</p>
+                        <span class="notification-time">30 minutes ago</span>
+                    </div>
+                    <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                </div>
+                
+                <div class="notification-card unread">
+                    <div class="notification-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h3>Complaint Update</h3>
+                        <p>Your complaint about noisy neighbors has been escalated.</p>
+                        <span class="notification-time">2 hours ago</span>
+                    </div>
+                    <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                </div>
+                
+                <div class="notification-card">
+                    <div class="notification-icon">
+                        <i class="fas fa-comment-alt"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h3>New Message</h3>
+                        <p>You have a new message from the Barangay Captain.</p>
+                        <span class="notification-time">1 day ago</span>
+                    </div>
+                    <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                </div>
+            </div>
+            <div class="section-footer">
+                <a href="#all-notifications" class="btn-secondary">View All Notifications</a>
+            </div>
+        </section>
+
+        <!-- Feedback Section (Modal Trigger) -->
+        <section id="feedback" class="feedback-section">
+            <div class="feedback-cta">
+                <h2>We Value Your Feedback</h2>
+                <p>Help us improve our services by sharing your experience</p>
+                <button id="give-feedback-btn" class="btn-primary">
+                    <i class="fas fa-comment-alt"></i> Provide Feedback
+                </button>
             </div>
         </section>
     </main>
+
+    <!-- Complaint Form Modal -->
+    <div id="complaint-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Submit New Complaint</h2>
+            
+            <form id="complaint-form" class="step-form">
+                <!-- Step 1: Basic Information -->
+                <div class="form-step active" data-step="1">
+                    <div class="form-group">
+                        <label for="category">Category</label>
+                        <select id="category" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="noise">Noise Disturbance</option>
+                            <option value="waste">Waste Management</option>
+                            <option value="road">Road Repair</option>
+                            <option value="water">Water Supply Issue</option>
+                            <option value="security">Safety Concern</option>
+                            <option value="others">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="title">Complaint Title</label>
+                        <input type="text" id="title" name="title" placeholder="Brief description of the issue" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="description">Detailed Description</label>
+                        <textarea id="description" name="description" placeholder="Describe the issue in detail..." required></textarea>
+                    </div>
+                    
+                    <div class="form-group-row">
+                        <div class="form-group">
+                            <label for="incident-date">Date of Incident</label>
+                            <input type="date" id="incident-date" name="incident-date">
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" placeholder="Where did it happen?" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-next" data-next="2">Next <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Additional Details -->
+                <div class="form-step" data-step="2">
+                    <div class="form-group">
+                        <label>Would you like to provide your contact information for follow-up?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="contact-preference" value="yes" checked> Yes</label>
+                            <label><input type="radio" name="contact-preference" value="no"> No (Submit anonymously)</label>
+                        </div>
+                    </div>
+                    
+                    <div id="contact-fields">
+                        <div class="form-group">
+                            <label for="full-name">Your Name</label>
+                            <input type="text" id="full-name" name="full-name" placeholder="Your full name">
+                        </div>
+                        
+                        <div class="form-group-row">
+                            <div class="form-group">
+                                <label for="contact-number">Phone Number</label>
+                                <input type="tel" id="contact-number" name="contact-number" placeholder="Your contact number">
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" name="email" placeholder="Your email address">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="attachment">Upload Evidence (Optional)</label>
+                        <input type="file" id="attachment" name="attachment" multiple>
+                        <p class="form-hint">You can upload photos, videos, or documents related to your complaint</p>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-prev" data-prev="1"><i class="fas fa-arrow-left"></i> Back</button>
+                        <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Submit Complaint</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Feedback Form Modal -->
+    <div id="feedback-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Provide Feedback</h2>
+            
+            <form id="feedback-form">
+                <div class="form-group">
+                    <label>What would you like to provide feedback about?</label>
+                    <select id="feedback-type" name="feedback-type" required>
+                        <option value="">Select feedback type</option>
+                        <option value="complaint-process">Complaint Process</option>
+                        <option value="response-time">Response Time</option>
+                        <option value="staff-courtesy">Staff Courtesy</option>
+                        <option value="resolution-quality">Resolution Quality</option>
+                        <option value="system-usability">System Usability</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-rating">Rating</label>
+                    <div class="rating-stars">
+                        <input type="radio" id="star5" name="rating" value="5">
+                        <label for="star5"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="star4" name="rating" value="4">
+                        <label for="star4"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="star3" name="rating" value="3">
+                        <label for="star3"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="star2" name="rating" value="2">
+                        <label for="star2"><i class="fas fa-star"></i></label>
+                        <input type="radio" id="star1" name="rating" value="1">
+                        <label for="star1"><i class="fas fa-star"></i></label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="feedback-message">Your Feedback</label>
+                    <textarea id="feedback-message" name="feedback-message" placeholder="Please share your experience..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="contact-me" id="contact-me">
+                        I'm willing to be contacted for follow-up questions
+                    </label>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Submit Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Footer -->
     <footer>
         <div class="container footer-content">
             <div class="footer-section">
-                <h3>About BCCMS</h3>
-                <p>A digital platform for efficient complaint management in the barangay.</p>
+                <h3>Need Help?</h3>
+                <p><i class="fas fa-clock"></i> Monday-Friday, 8:00 AM - 5:00 PM</p>
+                <p><i class="fas fa-phone"></i> +63 123 456 7890</p>
+                <p><i class="fas fa-envelope"></i> support@bccms.com</p>
             </div>
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#submit">Submit Complaint</a></li>
-                    <li><a href="#track">Track Complaint</a></li>
+                    <li><a href="#home"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="#" id="footer-submit-btn"><i class="fas fa-plus-circle"></i> Submit Complaint</a></li>
+                    <li><a href="#messages"><i class="fas fa-envelope"></i> Messages</a></li>
+                    <li><a href="#notifications"><i class="fas fa-bell"></i> Notifications</a></li>
+                    <li><a href="#feedback"><i class="fas fa-comment-alt"></i> Feedback</a></li>
                 </ul>
             </div>
             <div class="footer-section">
-                <h3>Contact Us</h3>
-                <p>Email: support@bccms.com</p>
-                <p>Phone: +63 123 456 7890</p>
+                <h3>About BCCMS</h3>
+                <p>A digital platform for efficient complaint management in the barangay.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
             </div>
         </div>
         <div class="footer-bottom">
             <p>&copy; 2024 Barangay Complaint Management System. All rights reserved.</p>
         </div>
     </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Modal control
+            const complaintModal = document.getElementById("complaint-modal");
+            const feedbackModal = document.getElementById("feedback-modal");
+            const openComplaintButtons = [
+                document.getElementById("submit-complaint-btn"),
+                document.getElementById("footer-submit-btn")
+            ];
+            const openFeedbackButton = document.getElementById("give-feedback-btn");
+            const closeButtons = document.querySelectorAll(".close-btn");
+            
+            function openModal(modal) {
+                modal.style.display = "block";
+                document.body.style.overflow = "hidden";
+            }
+            
+            function closeModal(modal) {
+                modal.style.display = "none";
+                document.body.style.overflow = "auto";
+                if (modal === complaintModal) resetComplaintForm();
+            }
+            
+            openComplaintButtons.forEach(btn => {
+                if (btn) btn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    openModal(complaintModal);
+                });
+            });
+            
+            if (openFeedbackButton) {
+                openFeedbackButton.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    openModal(feedbackModal);
+                });
+            }
+            
+            closeButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const modal = btn.closest(".modal");
+                    closeModal(modal);
+                });
+            });
+            
+            window.addEventListener("click", (e) => {
+                if (e.target.classList.contains("modal")) {
+                    closeModal(e.target);
+                }
+            });
+            
+            // Mobile menu toggle
+            const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
+            const mobileMenu = document.querySelector(".mobile-menu");
+            
+            if (mobileMenuToggle && mobileMenu) {
+                mobileMenuToggle.addEventListener("click", () => {
+                    mobileMenu.style.display = mobileMenu.style.display === "block" ? "none" : "block";
+                });
+            }
+            
+            // Form step navigation
+            const formSteps = document.querySelectorAll(".form-step");
+            const nextButtons = document.querySelectorAll(".btn-next");
+            const prevButtons = document.querySelectorAll(".btn-prev");
+            
+            nextButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const currentStep = btn.closest(".form-step");
+                    const nextStep = document.querySelector(`.form-step[data-step="${btn.dataset.next}"]`);
+                    
+                    currentStep.classList.remove("active");
+                    nextStep.classList.add("active");
+                });
+            });
+            
+            prevButtons.forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const currentStep = btn.closest(".form-step");
+                    const prevStep = document.querySelector(`.form-step[data-step="${btn.dataset.prev}"]`);
+                    
+                    currentStep.classList.remove("active");
+                    prevStep.classList.add("active");
+                });
+            });
+            
+            // Contact preference toggle
+            const contactPreference = document.querySelectorAll("input[name='contact-preference']");
+            const contactFields = document.getElementById("contact-fields");
+            
+            contactPreference.forEach(radio => {
+                radio.addEventListener("change", () => {
+                    contactFields.style.display = radio.value === "yes" ? "block" : "none";
+                });
+            });
+            
+            // Form submission
+            const complaintForm = document.getElementById("complaint-form");
+            if (complaintForm) {
+                complaintForm.addEventListener("submit", function(e) {
+                    e.preventDefault();
+                    // Here you would typically send the form data to the server
+                    alert("Your complaint has been submitted successfully!");
+                    closeModal(complaintModal);
+                });
+            }
+            
+            const feedbackForm = document.getElementById("feedback-form");
+            if (feedbackForm) {
+                feedbackForm.addEventListener("submit", function(e) {
+                    e.preventDefault();
+                    // Here you would typically send the feedback data to the server
+                    alert("Thank you for your valuable feedback!");
+                    closeModal(feedbackModal);
+                });
+            }
+            
+            // Mark as read buttons
+            const markReadButtons = document.querySelectorAll(".btn-mark-read");
+            markReadButtons.forEach(btn => {
+                btn.addEventListener("click", function() {
+                    const card = this.closest(".message-card, .notification-card");
+                    if (card) {
+                        card.classList.remove("unread");
+                        updateNotificationCounts();
+                    }
+                });
+            });
+            
+            function resetComplaintForm() {
+                // Reset form steps
+                formSteps.forEach(step => step.classList.remove("active"));
+                document.querySelector(".form-step[data-step='1']").classList.add("active");
+                
+                // Reset form fields
+                if (complaintForm) complaintForm.reset();
+            }
+            
+            function updateNotificationCounts() {
+                // This would be more dynamic in a real application
+                const unreadMessages = document.querySelectorAll(".message-card.unread").length;
+                const unreadNotifications = document.querySelectorAll(".notification-card.unread").length;
+                
+                document.querySelectorAll(".notification-count").forEach(el => {
+                    if (el.closest("#messages")) {
+                        el.textContent = unreadMessages;
+                    } else if (el.closest("#notifications")) {
+                        el.textContent = unreadNotifications;
+                    }
+                });
+            }
+            
+            // Initialize
+            updateNotificationCounts();
+        });
+    </script>
 </body>
 </html>

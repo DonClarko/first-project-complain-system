@@ -389,6 +389,16 @@
         </div>
     </div>
 
+    <!-- Complaint Details Modal -->
+<div id="complaint-details-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div id="complaint-details-content">
+            <!-- Content will be loaded here dynamically -->
+        </div>
+    </div>
+</div>
+
     <!-- Footer -->
     <footer>
         <div class="container footer-content">
@@ -424,159 +434,420 @@
     </footer>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Modal control
-            const complaintModal = document.getElementById("complaint-modal");
-            const feedbackModal = document.getElementById("feedback-modal");
-            const openComplaintButtons = [
-                document.getElementById("submit-complaint-btn"),
-                document.getElementById("footer-submit-btn")
-            ];
-            const openFeedbackButton = document.getElementById("give-feedback-btn");
-            const closeButtons = document.querySelectorAll(".close-btn");
-            
-            function openModal(modal) {
-                modal.style.display = "block";
-                document.body.style.overflow = "hidden";
-            }
-            
-            function closeModal(modal) {
-                modal.style.display = "none";
-                document.body.style.overflow = "auto";
-                if (modal === complaintModal) resetComplaintForm();
-            }
-            
-            openComplaintButtons.forEach(btn => {
-                if (btn) btn.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    openModal(complaintModal);
-                });
-            });
-            
-            if (openFeedbackButton) {
-                openFeedbackButton.addEventListener("click", (e) => {
-                    e.preventDefault();
-                    openModal(feedbackModal);
-                });
-            }
-            
-            closeButtons.forEach(btn => {
-                btn.addEventListener("click", () => {
-                    const modal = btn.closest(".modal");
-                    closeModal(modal);
-                });
-            });
-            
-            window.addEventListener("click", (e) => {
-                if (e.target.classList.contains("modal")) {
-                    closeModal(e.target);
-                }
-            });
-            
-            // Mobile menu toggle
-            const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
-            const mobileMenu = document.querySelector(".mobile-menu");
-            
-            if (mobileMenuToggle && mobileMenu) {
-                mobileMenuToggle.addEventListener("click", () => {
-                    mobileMenu.style.display = mobileMenu.style.display === "block" ? "none" : "block";
-                });
-            }
-            
-            // Form step navigation
-            const formSteps = document.querySelectorAll(".form-step");
-            const nextButtons = document.querySelectorAll(".btn-next");
-            const prevButtons = document.querySelectorAll(".btn-prev");
-            
-            nextButtons.forEach(btn => {
-                btn.addEventListener("click", () => {
-                    const currentStep = btn.closest(".form-step");
-                    const nextStep = document.querySelector(`.form-step[data-step="${btn.dataset.next}"]`);
-                    
-                    currentStep.classList.remove("active");
-                    nextStep.classList.add("active");
-                });
-            });
-            
-            prevButtons.forEach(btn => {
-                btn.addEventListener("click", () => {
-                    const currentStep = btn.closest(".form-step");
-                    const prevStep = document.querySelector(`.form-step[data-step="${btn.dataset.prev}"]`);
-                    
-                    currentStep.classList.remove("active");
-                    prevStep.classList.add("active");
-                });
-            });
-            
-            // Contact preference toggle
-            const contactPreference = document.querySelectorAll("input[name='contact-preference']");
-            const contactFields = document.getElementById("contact-fields");
-            
-            contactPreference.forEach(radio => {
-                radio.addEventListener("change", () => {
-                    contactFields.style.display = radio.value === "yes" ? "block" : "none";
-                });
-            });
-            
-            // Form submission
-            const complaintForm = document.getElementById("complaint-form");
-            if (complaintForm) {
-                complaintForm.addEventListener("submit", function(e) {
-                    e.preventDefault();
-                    // Here you would typically send the form data to the server
-                    alert("Your complaint has been submitted successfully!");
-                    closeModal(complaintModal);
-                });
-            }
-            
-            const feedbackForm = document.getElementById("feedback-form");
-            if (feedbackForm) {
-                feedbackForm.addEventListener("submit", function(e) {
-                    e.preventDefault();
-                    // Here you would typically send the feedback data to the server
-                    alert("Thank you for your valuable feedback!");
-                    closeModal(feedbackModal);
-                });
-            }
-            
-            // Mark as read buttons
-            const markReadButtons = document.querySelectorAll(".btn-mark-read");
-            markReadButtons.forEach(btn => {
-                btn.addEventListener("click", function() {
-                    const card = this.closest(".message-card, .notification-card");
-                    if (card) {
-                        card.classList.remove("unread");
-                        updateNotificationCounts();
-                    }
-                });
-            });
-            
-            function resetComplaintForm() {
-                // Reset form steps
-                formSteps.forEach(step => step.classList.remove("active"));
-                document.querySelector(".form-step[data-step='1']").classList.add("active");
-                
-                // Reset form fields
-                if (complaintForm) complaintForm.reset();
-            }
-            
-            function updateNotificationCounts() {
-                // This would be more dynamic in a real application
-                const unreadMessages = document.querySelectorAll(".message-card.unread").length;
-                const unreadNotifications = document.querySelectorAll(".notification-card.unread").length;
-                
-                document.querySelectorAll(".notification-count").forEach(el => {
-                    if (el.closest("#messages")) {
-                        el.textContent = unreadMessages;
-                    } else if (el.closest("#notifications")) {
-                        el.textContent = unreadNotifications;
-                    }
-                });
-            }
-            
-            // Initialize
-            updateNotificationCounts();
+document.addEventListener("DOMContentLoaded", function() {
+    // Modal control
+    const complaintModal = document.getElementById("complaint-modal");
+    const feedbackModal = document.getElementById("feedback-modal");
+    const complaintDetailsModal = document.getElementById("complaint-details-modal");
+    const openComplaintButtons = [
+        document.getElementById("submit-complaint-btn"),
+        document.getElementById("footer-submit-btn")
+    ];
+    const openFeedbackButton = document.getElementById("give-feedback-btn");
+    const closeButtons = document.querySelectorAll(".close-btn");
+    const viewAllButton = document.querySelector('a[href="#all-complaints"]');
+    
+    function openModal(modal) {
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden";
+    }
+    
+    function closeModal(modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+        if (modal === complaintModal) resetComplaintForm();
+    }
+    
+    openComplaintButtons.forEach(btn => {
+        if (btn) btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            openModal(complaintModal);
         });
+    });
+    
+    if (openFeedbackButton) {
+        openFeedbackButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            openModal(feedbackModal);
+        });
+    }
+    
+    closeButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const modal = btn.closest(".modal");
+            closeModal(modal);
+        });
+    });
+    
+    window.addEventListener("click", (e) => {
+        if (e.target.classList.contains("modal")) {
+            closeModal(e.target);
+        }
+    });
+    
+    // Mobile menu toggle
+    const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
+    const mobileMenu = document.querySelector(".mobile-menu");
+    
+    if (mobileMenuToggle && mobileMenu) {
+        mobileMenuToggle.addEventListener("click", () => {
+            mobileMenu.style.display = mobileMenu.style.display === "block" ? "none" : "block";
+        });
+    }
+    
+    // Form step navigation
+    const formSteps = document.querySelectorAll(".form-step");
+    const nextButtons = document.querySelectorAll(".btn-next");
+    const prevButtons = document.querySelectorAll(".btn-prev");
+    
+    nextButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const currentStep = btn.closest(".form-step");
+            const nextStep = document.querySelector(`.form-step[data-step="${btn.dataset.next}"]`);
+            
+            currentStep.classList.remove("active");
+            nextStep.classList.add("active");
+        });
+    });
+    
+    prevButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const currentStep = btn.closest(".form-step");
+            const prevStep = document.querySelector(`.form-step[data-step="${btn.dataset.prev}"]`);
+            
+            currentStep.classList.remove("active");
+            prevStep.classList.add("active");
+        });
+    });
+    
+    // Contact preference toggle
+    const contactPreference = document.querySelectorAll("input[name='contact-preference']");
+    const contactFields = document.getElementById("contact-fields");
+    
+    contactPreference.forEach(radio => {
+        radio.addEventListener("change", () => {
+            contactFields.style.display = radio.value === "yes" ? "block" : "none";
+        });
+    });
+    
+    // Form submission
+    const complaintForm = document.getElementById("complaint-form");
+    if (complaintForm) {
+        complaintForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            // Here you would typically send the form data to the server
+            alert("Your complaint has been submitted successfully!");
+            closeModal(complaintModal);
+        });
+    }
+    
+    const feedbackForm = document.getElementById("feedback-form");
+    if (feedbackForm) {
+        feedbackForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            // Here you would typically send the feedback data to the server
+            alert("Thank you for your valuable feedback!");
+            closeModal(feedbackModal);
+        });
+    }
+    
+    // Mark as read buttons
+    const markReadButtons = document.querySelectorAll(".btn-mark-read");
+    markReadButtons.forEach(btn => {
+        btn.addEventListener("click", function() {
+            const card = this.closest(".message-card, .notification-card");
+            if (card) {
+                card.classList.remove("unread");
+                updateNotificationCounts();
+            }
+        });
+    });
+    
+    function resetComplaintForm() {
+        // Reset form steps
+        formSteps.forEach(step => step.classList.remove("active"));
+        document.querySelector(".form-step[data-step='1']").classList.add("active");
+        
+        // Reset form fields
+        if (complaintForm) complaintForm.reset();
+    }
+    
+    function updateNotificationCounts() {
+        // This would be more dynamic in a real application
+        const unreadMessages = document.querySelectorAll(".message-card.unread").length;
+        const unreadNotifications = document.querySelectorAll(".notification-card.unread").length;
+        
+        document.querySelectorAll(".notification-count").forEach(el => {
+            if (el.closest("#messages")) {
+                el.textContent = unreadMessages;
+            } else if (el.closest("#notifications")) {
+                el.textContent = unreadNotifications;
+            }
+        });
+    }
+    
+    // Initialize
+    updateNotificationCounts();
+    loadRecentComplaints();
+    
+    // View Details and View All functionality
+    document.addEventListener('click', function(e) {
+        // Handle View Details click
+        if (e.target.closest('.btn-view')) {
+            e.preventDefault();
+            const complaintCard = e.target.closest('.complaint-card');
+            const complaintId = complaintCard.querySelector('.complaint-id').textContent;
+            showComplaintDetails(complaintId);
+        }
+        
+        // Handle View All click
+        if (e.target === viewAllButton || e.target.closest('a[href="#all-complaints"]')) {
+            e.preventDefault();
+            showAllComplaints();
+        }
+    });
+});
+
+// Complaint Form Handling
+document.getElementById('complaint-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch('/complaint/submit', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`Complaint submitted successfully! Your complaint ID: ${result.complaint_id}`);
+            closeModal(complaintModal);
+            await loadRecentComplaints(); // Refresh the complaints list
+        } else {
+            alert("There was an error submitting your complaint.");
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert("There was an error submitting your complaint. Please try again.");
+    }
+});
+
+// Load and display recent complaints
+async function loadRecentComplaints() {
+    try {
+        const response = await fetch('/complaint/recent');
+        const complaints = await response.json();
+        
+        const complaintsGrid = document.querySelector('.complaints-grid');
+        if (!complaintsGrid) return;
+        
+        complaintsGrid.innerHTML = ''; // Clear existing cards
+        
+        if (complaints.length === 0) {
+            complaintsGrid.innerHTML = '<p class="no-complaints">No complaints submitted yet.</p>';
+            return;
+        }
+        
+        complaints.forEach(complaint => {
+            const complaintDate = new Date(complaint.submitted_date);
+            const formattedDate = complaintDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            const statusClass = getStatusClass(complaint.status);
+            
+            const complaintCard = document.createElement('div');
+            complaintCard.className = 'complaint-card';
+            complaintCard.innerHTML = `
+                <div class="complaint-header">
+                    <span class="complaint-id">${complaint.id}</span>
+                    <span class="status-badge ${statusClass}">${complaint.status}</span>
+                </div>
+                <h3 class="complaint-title">${complaint.title}</h3>
+                <p class="complaint-date"><i class="far fa-calendar-alt"></i> Submitted: ${formattedDate}</p>
+                <p class="complaint-location"><i class="fas fa-map-marker-alt"></i> ${complaint.location}</p>
+                <div class="complaint-actions">
+                    <a href="#view" class="btn-view"><i class="fas fa-eye"></i> View Details</a>
+                    ${complaint.status === 'Resolved' ? 
+                        '<a href="#feedback" class="btn-feedback"><i class="fas fa-comment-alt"></i> Give Feedback</a>' : 
+                        '<a href="#message" class="btn-message"><i class="fas fa-envelope"></i> Message</a>'}
+                </div>
+            `;
+            
+            complaintsGrid.appendChild(complaintCard);
+        });
+    } catch (error) {
+        console.error('Error loading complaints:', error);
+    }
+}
+
+// Show details for a single complaint
+async function showComplaintDetails(complaintId) {
+    try {
+        const response = await fetch(`/complaint/details?id=${complaintId}`);
+        const complaint = await response.json();
+        
+        const complaintDate = new Date(complaint.submitted_date);
+        const formattedDate = complaintDate.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        const incidentDate = complaint.incident_date ? new Date(complaint.incident_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }) : 'Not specified';
+        
+        const statusClass = getStatusClass(complaint.status);
+        
+        const detailsContent = document.getElementById('complaint-details-content');
+        detailsContent.innerHTML = `
+            <h2>Complaint Details</h2>
+            <div class="complaint-details-card">
+                <div class="complaint-header">
+                    <span class="complaint-id">${complaint.id}</span>
+                    <span class="status-badge ${statusClass}">${complaint.status}</span>
+                </div>
+                
+                <div class="detail-row">
+                    <h3 class="complaint-title">${complaint.title}</h3>
+                </div>
+                
+                <div class="detail-row">
+                    <p><strong>Category:</strong> ${complaint.category}</p>
+                </div>
+                
+                <div class="detail-row">
+                    <p><strong>Submitted:</strong> ${formattedDate}</p>
+                </div>
+                
+                <div class="detail-row">
+                    <p><strong>Incident Date:</strong> ${incidentDate}</p>
+                </div>
+                
+                <div class="detail-row">
+                    <p><strong>Location:</strong> ${complaint.location}</p>
+                </div>
+                
+                <div class="detail-row">
+                    <h4>Description</h4>
+                    <p>${complaint.description}</p>
+                </div>
+                
+                <div class="detail-actions">
+                    ${complaint.status === 'Resolved' ? 
+                        '<button class="btn-primary btn-feedback"><i class="fas fa-comment-alt"></i> Give Feedback</button>' : 
+                        '<button class="btn-primary btn-message"><i class="fas fa-envelope"></i> Send Message</button>'}
+                    <button class="btn-secondary close-details">Close</button>
+                </div>
+            </div>
+        `;
+        
+        // Open the modal
+        const modal = document.getElementById('complaint-details-modal');
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Add event listener for close button
+        detailsContent.querySelector('.close-details')?.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+    } catch (error) {
+        console.error('Error loading complaint details:', error);
+        alert('Failed to load complaint details. Please try again.');
+    }
+}
+
+// Show all complaints in a modal
+async function showAllComplaints() {
+    try {
+        const response = await fetch('/complaint/all');
+        const complaints = await response.json();
+        
+        const detailsContent = document.getElementById('complaint-details-content');
+        detailsContent.innerHTML = `
+            <h2>All Your Complaints</h2>
+            <div class="all-complaints-list">
+                ${complaints.length === 0 ? 
+                    '<p class="no-complaints">You have not submitted any complaints yet.</p>' : 
+                    complaints.map(complaint => {
+                        const complaintDate = new Date(complaint.submitted_date);
+                        const formattedDate = complaintDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        });
+                        
+                        const statusClass = getStatusClass(complaint.status);
+                        
+                        return `
+                            <div class="complaint-summary">
+                                <div class="complaint-header">
+                                    <span class="complaint-id">${complaint.id}</span>
+                                    <span class="status-badge ${statusClass}">${complaint.status}</span>
+                                </div>
+                                <h3 class="complaint-title">${complaint.title}</h3>
+                                <p class="complaint-date"><i class="far fa-calendar-alt"></i> Submitted: ${formattedDate}</p>
+                                <p class="complaint-location"><i class="fas fa-map-marker-alt"></i> ${complaint.location}</p>
+                                <button class="btn-view view-summary" data-id="${complaint.id}">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
+                            </div>
+                        `;
+                    }).join('')
+                }
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary close-details">Close</button>
+            </div>
+        `;
+        
+        // Open the modal
+        const modal = document.getElementById('complaint-details-modal');
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Add event listener for close button
+        detailsContent.querySelector('.close-details')?.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        // Add event listeners for view buttons
+        detailsContent.querySelectorAll('.view-summary').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const complaintId = btn.dataset.id;
+                showComplaintDetails(complaintId);
+            });
+        });
+        
+    } catch (error) {
+        console.error('Error loading all complaints:', error);
+        alert('Failed to load complaints. Please try again.');
+    }
+}
+
+// Helper function to get CSS class for status
+function getStatusClass(status) {
+    const statusMap = {
+        'New': 'new',
+        'In Progress': 'in-progress',
+        'Resolved': 'resolved',
+        'Escalated': 'escalated'
+    };
+    return statusMap[status] || '';
+}
     </script>
 </body>
 </html>

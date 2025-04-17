@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barangay Officials Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/barangayofficialsdashboard.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <!-- Header Navigation -->
@@ -13,42 +14,65 @@
             <nav>
                 <div class="logo">BCCMS</div>
                 <ul class="menu">
-                    <li><a href="#dashboard">Dashboard</a></li>
-                    <li><a href="#complaints">Complaints</a></li>
-                    <li><a href="#reports">Reports</a></li>
-                    <li><a href="#settings">Settings</a></li>
-                    <li><a href="{{ url_for('auth.show_auth', form_type='login') }}" class="btn-logout">Logout</a></li>
+                    <li><a href="#dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="#complaints"><i class="fas fa-exclamation-circle"></i> Complaints</a></li>
+                    <li><a href="#messages"><i class="fas fa-envelope"></i> Messages</a></li>
+                    <li><a href="#notifications"><i class="fas fa-bell"></i> Notifications</a></li>
+                    <li><a href="#feedback"><i class="fas fa-comment-alt"></i> Feedback</a></li>
+                    <li class="user-menu">
+                        <a href="#profile"><i class="fas fa-user-circle"></i> Profile</a>
+                        <div class="dropdown-content">
+                            <a href="#profile"><i class="fas fa-user"></i> My Profile</a>
+                            <a href="#settings"><i class="fas fa-cog"></i> Settings</a>
+                            <a href="{{ url_for('auth.show_auth', form_type='login') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                        </div>
+                    </li>
                 </ul>
+                <div class="mobile-menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
             </nav>
         </div>
     </header>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu">
+        <a href="#dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+        <a href="#complaints"><i class="fas fa-exclamation-circle"></i> Complaints</a>
+        <a href="#messages"><i class="fas fa-envelope"></i> Messages</a>
+        <a href="#notifications"><i class="fas fa-bell"></i> Notifications</a>
+        <a href="#feedback"><i class="fas fa-comment-alt"></i> Feedback</a>
+        <a href="#profile"><i class="fas fa-user"></i> Profile</a>
+        <a href="#settings"><i class="fas fa-cog"></i> Settings</a>
+        <a href="{{ url_for('auth.show_auth', form_type='login') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
 
     <!-- Main Content -->
     <main class="container">
         <!-- Dashboard Overview -->
         <section id="dashboard" class="dashboard">
-            <h1>Barangay Officials Dashboard</h1>
+            <h1><i class="fas fa-user-shield"></i> Barangay Officials Dashboard</h1>
             
             <div class="stats-grid">
                 <div class="stat-card">
                     <h3>Total Complaints</h3>
                     <p class="stat-number">142</p>
-                    <p class="stat-change">↑ 12% from last month</p>
+                    <p class="stat-change"><i class="fas fa-arrow-up"></i> 12% from last month</p>
                 </div>
                 <div class="stat-card">
                     <h3>Pending</h3>
                     <p class="stat-number">28</p>
-                    <p class="stat-urgent">5 urgent</p>
+                    <p class="stat-urgent"><i class="fas fa-exclamation-triangle"></i> 5 urgent</p>
                 </div>
                 <div class="stat-card">
                     <h3>Resolved</h3>
                     <p class="stat-number">89</p>
-                    <p class="stat-change">↑ 8% from last month</p>
+                    <p class="stat-change"><i class="fas fa-arrow-up"></i> 8% from last month</p>
                 </div>
                 <div class="stat-card">
                     <h3>Avg. Resolution Time</h3>
                     <p class="stat-number">3.2 days</p>
-                    <p class="stat-change">↓ 0.5 days from last month</p>
+                    <p class="stat-change"><i class="fas fa-arrow-down"></i> 0.5 days from last month</p>
                 </div>
             </div>
 
@@ -57,17 +81,21 @@
                 <div class="sidebar">
                     <h3>Quick Actions</h3>
                     <ul>
-                        <li><a href="#new-complaints">New Complaints (5)</a></li>
-                        <li><a href="#pending">Pending Review (12)</a></li>
-                        <li><a href="#in-progress">In Progress (8)</a></li>
-                        <li><a href="#escalated">Escalated (3)</a></li>
-                        <li><a href="#generate-report">Generate Report</a></li>
-                        <li><a href="#settings">Settings</a></li>
+                        <li><a href="#new-complaints"><i class="fas fa-plus-circle"></i> New Complaints <span class="badge">5</span></a></li>
+                        <li><a href="#pending"><i class="fas fa-clock"></i> Pending Review <span class="badge">12</span></a></li>
+                        <li><a href="#in-progress"><i class="fas fa-spinner"></i> In Progress <span class="badge">8</span></a></li>
+                        <li><a href="#escalated"><i class="fas fa-exclamation-triangle"></i> Escalated <span class="badge">3</span></a></li>
+                        <li><a href="#generate-report"><i class="fas fa-file-alt"></i> Generate Report</a></li>
+                        <li><a href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
                     </ul>
                 </div>
 
                 <div class="content-area">
-                    <h2>Recent Complaints</h2>
+                    <div class="section-header">
+                        <h2><i class="fas fa-list"></i> Recent Complaints</h2>
+                        <a href="#all-complaints" class="btn-link">View All</a>
+                    </div>
+                    
                     <table class="complaints-table">
                         <thead>
                             <tr>
@@ -89,8 +117,11 @@
                                 <td><span class="status new">New</span></td>
                                 <td><span class="urgency high">High</span></td>
                                 <td>
-                                    <a href="#view" class="btn-action">View</a>
-                                    <a href="#assign" class="btn-action">Assign</a>
+                                    <div class="action-buttons">
+                                        <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
+                                        <a href="#assign" class="btn-action btn-assign"><i class="fas fa-user-tag"></i></a>
+                                        <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
@@ -101,8 +132,11 @@
                                 <td><span class="status pending">Pending</span></td>
                                 <td><span class="urgency medium">Medium</span></td>
                                 <td>
-                                    <a href="#view" class="btn-action">View</a>
-                                    <a href="#update" class="btn-action">Update</a>
+                                    <div class="action-buttons">
+                                        <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
+                                        <a href="#update" class="btn-action btn-update"><i class="fas fa-edit"></i></a>
+                                        <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                                    </div>
                                 </td>
                             </tr>
                             <tr>
@@ -113,31 +147,468 @@
                                 <td><span class="status in-progress">In Progress</span></td>
                                 <td><span class="urgency high">High</span></td>
                                 <td>
-                                    <a href="#view" class="btn-action">View</a>
-                                    <a href="#escalate" class="btn-action">Escalate</a>
+                                    <div class="action-buttons">
+                                        <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
+                                        <a href="#escalate" class="btn-action btn-escalate"><i class="fas fa-level-up-alt"></i></a>
+                                        <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </section>
 
-                    <div class="action-panel">
-                        <h3>Quick Actions</h3>
-                        <div class="action-buttons">
-                            <a href="#new-complaint" class="btn-primary">Process New Complaints</a>
-                            <a href="#generate-report" class="btn-secondary">Generate Weekly Report</a>
-                            <a href="#meeting" class="btn-secondary">Schedule Meeting</a>
+        <!-- Messages Section -->
+        <section id="messages" class="messages-section">
+            <div class="section-header">
+                <h2><i class="fas fa-envelope"></i> Messages</h2>
+                <span class="notification-count">3</span>
+            </div>
+            <div class="messages-list">
+                <div class="message-card unread">
+                    <div class="message-sender">
+                        <div class="sender-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="sender-info">
+                            <h3>Juan Dela Cruz</h3>
+                            <p class="message-preview">Regarding my complaint about noise disturbance...</p>
                         </div>
                     </div>
+                    <div class="message-meta">
+                        <span class="message-time">2 hours ago</span>
+                        <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                    </div>
                 </div>
+                
+                <div class="message-card">
+                    <div class="message-sender">
+                        <div class="sender-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="sender-info">
+                            <h3>Maria Santos</h3>
+                            <p class="message-preview">Thank you for resolving my garbage complaint...</p>
+                        </div>
+                    </div>
+                    <div class="message-meta">
+                        <span class="message-time">1 day ago</span>
+                        <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                    </div>
+                </div>
+                
+                <div class="message-card">
+                    <div class="message-sender">
+                        <div class="sender-avatar">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="sender-info">
+                            <h3>Homeowners Association</h3>
+                            <p class="message-preview">Meeting reminder for tomorrow at 3pm...</p>
+                        </div>
+                    </div>
+                    <div class="message-meta">
+                        <span class="message-time">3 days ago</span>
+                        <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="section-footer">
+                <a href="#all-messages" class="btn-secondary"><i class="fas fa-inbox"></i> View All Messages</a>
+                <a href="#new-message" class="btn-primary"><i class="fas fa-paper-plane"></i> New Message</a>
+            </div>
+        </section>
+
+        <!-- Notifications Section -->
+        <section id="notifications" class="notifications-section">
+            <div class="section-header">
+                <h2><i class="fas fa-bell"></i> Notifications</h2>
+                <span class="notification-count">5</span>
+            </div>
+            <div class="notifications-list">
+                <div class="notification-card unread">
+                    <div class="notification-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h3>New Complaint Submitted</h3>
+                        <p>Juan Dela Cruz has submitted a new complaint about noise disturbance.</p>
+                        <span class="notification-time">30 minutes ago</span>
+                    </div>
+                    <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                </div>
+                
+                <div class="notification-card unread">
+                    <div class="notification-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h3>Complaint Resolved</h3>
+                        <p>Your assigned complaint BCMS-2025-044 has been resolved.</p>
+                        <span class="notification-time">2 hours ago</span>
+                    </div>
+                    <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                </div>
+                
+                <div class="notification-card">
+                    <div class="notification-icon">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="notification-content">
+                        <h3>Upcoming Meeting</h3>
+                        <p>Barangay council meeting scheduled for tomorrow at 10:00 AM.</p>
+                        <span class="notification-time">1 day ago</span>
+                    </div>
+                    <button class="btn-mark-read"><i class="far fa-check-circle"></i></button>
+                </div>
+            </div>
+            <div class="section-footer">
+                <a href="#all-notifications" class="btn-secondary"><i class="fas fa-list"></i> View All Notifications</a>
+            </div>
+        </section>
+
+        <!-- Feedback Section -->
+        <section id="feedback" class="feedback-section">
+            <div class="section-header">
+                <h2><i class="fas fa-comment-alt"></i> Resident Feedback</h2>
+                <div class="feedback-filter">
+                    <select id="feedback-filter">
+                        <option value="all">All Feedback</option>
+                        <option value="positive">Positive</option>
+                        <option value="neutral">Neutral</option>
+                        <option value="negative">Negative</option>
+                        <option value="recent">Most Recent</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="feedback-list">
+                <div class="feedback-card positive">
+                    <div class="feedback-header">
+                        <div class="resident-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="resident-info">
+                            <h3>Maria Santos</h3>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <span class="feedback-date">Today</span>
+                    </div>
+                    <div class="feedback-content">
+                        <p>Thank you for resolving my garbage collection issue so quickly! The barangay staff were very professional and helpful throughout the process.</p>
+                    </div>
+                    <div class="feedback-meta">
+                        <span class="complaint-reference">BCMS-2025-044</span>
+                        <button class="btn-reply"><i class="fas fa-reply"></i> Reply</button>
+                    </div>
+                </div>
+                
+                <div class="feedback-card neutral">
+                    <div class="feedback-header">
+                        <div class="resident-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="resident-info">
+                            <h3>Pedro Reyes</h3>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                        </div>
+                        <span class="feedback-date">2 days ago</span>
+                    </div>
+                    <div class="feedback-content">
+                        <p>The road repair was completed, but it took longer than expected. Communication could be improved about expected completion times.</p>
+                    </div>
+                    <div class="feedback-meta">
+                        <span class="complaint-reference">BCMS-2025-043</span>
+                        <button class="btn-reply"><i class="fas fa-reply"></i> Reply</button>
+                    </div>
+                </div>
+                
+                <div class="feedback-card negative">
+                    <div class="feedback-header">
+                        <div class="resident-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="resident-info">
+                            <h3>Juan Dela Cruz</h3>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                        </div>
+                        <span class="feedback-date">1 week ago</span>
+                    </div>
+                    <div class="feedback-content">
+                        <p>My noise complaint was not handled well. The issue persists and I didn't receive updates on the status. Very disappointed with the service.</p>
+                    </div>
+                    <div class="feedback-meta">
+                        <span class="complaint-reference">BCMS-2025-042</span>
+                        <button class="btn-reply"><i class="fas fa-reply"></i> Reply</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section-footer">
+                <a href="#all-feedback" class="btn-secondary"><i class="fas fa-list"></i> View All Feedback</a>
+                <a href="#feedback-report" class="btn-primary"><i class="fas fa-chart-bar"></i> Generate Feedback Report</a>
             </div>
         </section>
     </main>
 
     <!-- Footer -->
     <footer>
-        <div class="container">
+        <div class="container footer-content">
+            <div class="footer-section" style="text-align: center;">
+                <h3>Barangay Officials</h3>
+                <p><i>"Serving the community with integrity and dedication"</i></p>
+                <p><i class="fas fa-clock"></i> Office Hours: Mon-Fri, 8:00 AM - 5:00 PM</p>
+                <p><i class="fas fa-phone"></i> (02) 123-4567</p>
+                <p><i class="fas fa-envelope"></i> officials@bccms.com</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                    <li><a href="#complaints"><i class="fas fa-exclamation-circle"></i> Complaints</a></li>
+                    <li><a href="#messages"><i class="fas fa-envelope"></i> Messages</a></li>
+                    <li><a href="#notifications"><i class="fas fa-bell"></i> Notifications</a></li>
+                    <li><a href="#feedback"><i class="fas fa-comment-alt"></i> Feedback</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>About BCCMS</h3>
+                <p>Barangay Complaint and Communication Management System for efficient community service.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
             <p>&copy; 2025 Barangay Complaint Management System | Official Dashboard</p>
         </div>
     </footer>
+
+    <script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Modal control
+    const messageModal = document.getElementById("message-modal");
+    const notificationSettingsModal = document.getElementById("notification-settings-modal");
+    const feedbackReplyModal = document.getElementById("feedback-reply-modal");
+    const openMessageButtons = document.querySelectorAll('a[href="#new-message"], .btn-reply');
+    const openNotificationSettingsButton = document.querySelector('a[href="#notification-settings"]');
+    const closeButtons = document.querySelectorAll(".close-btn");
+    
+    // Add logout functionality
+    const logoutLinks = document.querySelectorAll('a[href*="login"]');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await fetch('/auth/logout');
+                window.location.href = '/auth/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/auth/login';
+            }
+        });
+    });
+    
+    function openModal(modal) {
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden";
+    }
+    
+    function closeModal(modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+    
+    openMessageButtons.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            openModal(messageModal);
+        });
+    });
+    
+    if (openNotificationSettingsButton) {
+        openNotificationSettingsButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            openModal(notificationSettingsModal);
+        });
+    }
+    
+    document.querySelectorAll('.btn-reply').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openModal(feedbackReplyModal);
+        });
+    });
+    
+    closeButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const modal = btn.closest(".modal");
+            closeModal(modal);
+        });
+    });
+    
+    window.addEventListener("click", (e) => {
+        if (e.target.classList.contains("modal")) {
+            closeModal(e.target);
+        }
+    });
+    
+    // Mobile menu toggle
+    const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
+    const mobileMenu = document.querySelector(".mobile-menu");
+    
+    if (mobileMenuToggle && mobileMenu) {
+        mobileMenuToggle.addEventListener("click", () => {
+            mobileMenu.style.display = mobileMenu.style.display === "block" ? "none" : "block";
+        });
+    }
+    
+    // Mark as read buttons
+    const markReadButtons = document.querySelectorAll(".btn-mark-read");
+    markReadButtons.forEach(btn => {
+        btn.addEventListener("click", function() {
+            const card = this.closest(".message-card, .notification-card");
+            if (card) {
+                card.classList.remove("unread");
+                updateNotificationCounts();
+            }
+        });
+    });
+    
+    function updateNotificationCounts() {
+        // This would be more dynamic in a real application
+        const unreadMessages = document.querySelectorAll(".message-card.unread").length;
+        const unreadNotifications = document.querySelectorAll(".notification-card.unread").length;
+        
+        document.querySelectorAll(".notification-count").forEach(el => {
+            if (el.closest("#messages")) {
+                el.textContent = unreadMessages;
+            } else if (el.closest("#notifications")) {
+                el.textContent = unreadNotifications;
+            }
+        });
+    }
+    
+    // Form submissions
+    const messageForm = document.getElementById("message-form");
+    if (messageForm) {
+        messageForm.addEventListener("submit", async function(e) {
+            e.preventDefault();
+            // Here you would send the message data to the server
+            alert("Message sent successfully!");
+            closeModal(messageModal);
+        });
+    }
+    
+    const notificationSettingsForm = document.getElementById("notification-settings-form");
+    if (notificationSettingsForm) {
+        notificationSettingsForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            // Here you would save the notification settings
+            alert("Notification settings saved!");
+            closeModal(notificationSettingsModal);
+        });
+    }
+    
+    const feedbackReplyForm = document.getElementById("feedback-reply-form");
+    if (feedbackReplyForm) {
+        feedbackReplyForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            // Here you would send the feedback response
+            alert("Response sent successfully!");
+            closeModal(feedbackReplyModal);
+        });
+    }
+    
+    // Initialize
+    updateNotificationCounts();
+});
+
+// Initialize real-time updates
+function initializeRealTimeUpdates() {
+    // This would connect to a WebSocket or use polling in a real application
+    // For now, we'll just refresh the data periodically
+    setInterval(() => {
+        updateNotificationCounts();
+    }, 300000); // Refresh every 5 minutes
+    
+    // Also refresh when the window gains focus
+    window.addEventListener('focus', () => {
+        updateNotificationCounts();
+    });
+}
+
+// Initialize the application
+function initializeApp() {
+    // Check authentication status
+    fetch('/auth/status', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && !data.authenticated) {
+            window.location.href = '/auth/login';
+        } else {
+            // User is authenticated, continue with initialization
+            initializeRealTimeUpdates();
+            
+            // Update user profile information
+            if (data && data.user) {
+                updateUserProfile(data.user);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Authentication check failed:', error);
+    });
+}
+
+// Update user profile information in the UI
+function updateUserProfile(user) {
+    const profileLinks = document.querySelectorAll('a[href="#profile"]');
+    profileLinks.forEach(link => {
+        if (link.querySelector('i.fa-user-circle')) {
+            link.innerHTML = `<i class="fas fa-user-circle"></i> ${user.name || 'Profile'}`;
+        }
+    });
+    
+    // Update any other user-specific UI elements
+}
+
+// Start the application
+initializeApp();
+    </script>
 </body>
 </html>

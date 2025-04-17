@@ -107,6 +107,7 @@ def login():
             session['user_email'] = email
             session['user_role'] = user['role']
             session['user_name'] = user['full_name']
+            session['is_admin'] = user.get('is_admin', False)
             
             # Admin handling
             if user.get('is_admin', False):

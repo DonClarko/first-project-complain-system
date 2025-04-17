@@ -1,104 +1,159 @@
-# complaints.py
-import os
+from flask import Blueprint, request, jsonify, session, flash, redirect, url_for
 import json
+import os
 from datetime import datetime
-from flask import Blueprint, request, jsonify
+from auth import login_required
+import uuid
 
-complaint_bp = Blueprint('complaint', __name__, url_prefix='/complaint')
+complaint_bp = Blueprint('complaint', __name__)
 
-# Configuration
-DATA_DIR = 'data'
-os.makedirs(DATA_DIR, exist_ok=True)
-COMPLAINTS_FILE = os.path.join(DATA_DIR, 'complaints.json')
+# Path to JSON file for complaint data
+COMPLAINTS_FILE = 'complaints.json'
 
 def load_complaints():
-    """Load complaints from JSON file"""
     if not os.path.exists(COMPLAINTS_FILE):
         return []
     with open(COMPLAINTS_FILE, 'r') as f:
-        try:
-            return json.load(f)
-        except json.JSONDecodeError:
-            return []
+        return json.load(f)
 
 def save_complaints(complaints):
-    """Save complaints to JSON file"""
     with open(COMPLAINTS_FILE, 'w') as f:
-        json.dump(complaints, f, indent=2)
+        json.dump(complaints, f, indent=4)
 
-def generate_complaint_id():
-    """Generate a new complaint ID in BCMS-YYYY-NNN format"""
-    complaints = load_complaints()
-    year = datetime.now().year
-    if not complaints:
-        return f"BCMS-{year}-001"
-    
-    max_id = 0
-    for complaint in complaints:
-        if complaint['id'].startswith(f"BCMS-{year}-"):
-            try:
-                num = int(complaint['id'].split('-')[-1])
-                max_id = max(max_id, num)
-            except (IndexError, ValueError):
-                continue
-    
-    return f"BCMS-{year}-{max_id + 1:03d}"
-
-@complaint_bp.route('/submit', methods=['POST'])
+@complaint_bp.route('/complaint/submit', methods=['POST'])
+@login_required
 def submit_complaint():
-    """Handle complaint form submission"""
-    form_data = request.form.to_dict()
-    
-    new_complaint = {
-        'id': generate_complaint_id(),
-        'title': form_data.get('title', ''),
-        'category': form_data.get('category', ''),
-        'description': form_data.get('description', ''),
-        'location': form_data.get('location', ''),
-        'incident_date': form_data.get('incident-date', ''),
-        'status': 'New',
-        'submitted_date': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'contact_preference': form_data.get('contact-preference', 'yes'),
-        'contact_info': {
-            'name': form_data.get('full-name', ''),
-            'phone': form_data.get('contact-number', ''),
-            'email': form_data.get('email', '')
+    try:
+        # Get the current user email from session
+        user_email = session.get('user_email')
+        if not user_email:
+            return jsonify({'success': False, 'message': 'User not logged in'}), 401
+        
+        # Generate a unique complaint ID
+        complaint_id = f"BCMS-{datetime.now().strftime('%Y')}-{str(uuid.uuid4())[:8]}"
+        
+        # Get form data
+        title = request.form.get('title')
+        category = request.form.get('category')
+        description = request.form.get('description')
+        location = request.form.get('location')
+        incident_date = request.form.get('incident-date')
+        
+        # Create complaint object
+        new_complaint = {
+            'id': complaint_id,
+            'title': title,
+            'category': category,
+            'description': description,
+            'location': location,
+            'incident_date': incident_date,
+            'submitted_date': datetime.now().isoformat(),
+            'user_email': user_email,  # Associate complaint with user
+            'status': 'New',
+            'updates': []
         }
-    }
-    
-    complaints = load_complaints()
-    complaints.append(new_complaint)
-    save_complaints(complaints)
-    
-    return jsonify({
-        'success': True,
-        'message': 'Complaint submitted successfully',
-        'complaint_id': new_complaint['id']
-    })
+        
+        # Save contact info if provided
+        contact_preference = request.form.get('contact-preference')
+        if contact_preference == 'yes':
+            new_complaint['contact_info'] = {
+                'name': request.form.get('full-name'),
+                'phone': request.form.get('contact-number'),
+                'email': request.form.get('email')
+            }
+        
+        # Add to complaints database
+        complaints = load_complaints()
+        complaints.append(new_complaint)
+        save_complaints(complaints)
+        
+        return jsonify({
+            'success': True,
+            'complaint_id': complaint_id,
+            'message': 'Complaint submitted successfully'
+        })
+        
+    except Exception as e:
+        print(f"Error submitting complaint: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
-@complaint_bp.route('/recent', methods=['GET'])
+@complaint_bp.route('/complaint/recent')
+@login_required
 def get_recent_complaints():
-    """Get the 3 most recent complaints"""
-    complaints = load_complaints()
-    recent = sorted(complaints, key=lambda x: x['submitted_date'], reverse=True)[:3]
-    return jsonify(recent)
+    try:
+        # Get the current user email from session
+        user_email = session.get('user_email')
+        if not user_email:
+            return jsonify([])
+        
+        # Load all complaints
+        all_complaints = load_complaints()
+        
+        # Filter complaints for the current user
+        user_complaints = [c for c in all_complaints if c.get('user_email') == user_email]
+        
+        # Sort by date (newest first) and take the most recent ones
+        recent_complaints = sorted(
+            user_complaints, 
+            key=lambda x: x.get('submitted_date', ''), 
+            reverse=True
+        )[:5]  # Limit to 5 most recent
+        
+        return jsonify(recent_complaints)
+        
+    except Exception as e:
+        print(f"Error fetching recent complaints: {str(e)}")
+        return jsonify([])
 
-@complaint_bp.route('/details', methods=['GET'])
-def get_complaint_details():
-    """Get details for a specific complaint"""
-    complaint_id = request.args.get('id')
-    complaints = load_complaints()
-    complaint = next((c for c in complaints if c['id'] == complaint_id), None)
-    
-    if not complaint:
-        return jsonify({'success': False, 'message': 'Complaint not found'}), 404
-    
-    return jsonify(complaint)
-
-@complaint_bp.route('/all', methods=['GET'])
+@complaint_bp.route('/complaint/all')
+@login_required
 def get_all_complaints():
-    """Get all complaints for the current user"""
-    # Note: In a real application, you would filter by the logged-in user
-    # For now, we'll return all complaints
-    complaints = load_complaints()
-    return jsonify(complaints)
+    try:
+        # Get the current user email from session
+        user_email = session.get('user_email')
+        if not user_email:
+            return jsonify([])
+        
+        # Load all complaints
+        all_complaints = load_complaints()
+        
+        # Filter complaints for the current user
+        user_complaints = [c for c in all_complaints if c.get('user_email') == user_email]
+        
+        # Sort by date (newest first)
+        sorted_complaints = sorted(
+            user_complaints, 
+            key=lambda x: x.get('submitted_date', ''), 
+            reverse=True
+        )
+        
+        return jsonify(sorted_complaints)
+        
+    except Exception as e:
+        print(f"Error fetching all complaints: {str(e)}")
+        return jsonify([])
+
+@complaint_bp.route('/complaint/details')
+@login_required
+def get_complaint_details():
+    try:
+        complaint_id = request.args.get('id')
+        user_email = session.get('user_email')
+        
+        if not complaint_id or not user_email:
+            return jsonify({'error': 'Invalid request'}), 400
+        
+        # Load all complaints
+        all_complaints = load_complaints()
+        
+        # Find the specific complaint for this user
+        complaint = next((c for c in all_complaints if c['id'] == complaint_id and c['user_email'] == user_email), None)
+        
+        if not complaint:
+            return jsonify({'error': 'Complaint not found or access denied'}), 404
+        
+        return jsonify(complaint)
+        
+    except Exception as e:
+        print(f"Error fetching complaint details: {str(e)}")
+        return jsonify({'error': str(e)}), 500

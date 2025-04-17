@@ -447,6 +447,21 @@ document.addEventListener("DOMContentLoaded", function() {
     const closeButtons = document.querySelectorAll(".close-btn");
     const viewAllButton = document.querySelector('a[href="#all-complaints"]');
     
+    // Add logout functionality
+    const logoutLinks = document.querySelectorAll('a[href*="login"]');
+    logoutLinks.forEach(link => {
+        link.addEventListener('click', async (e) => {
+            e.preventDefault();
+            try {
+                await fetch('/auth/logout');
+                window.location.href = '/auth/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/auth/login';
+            }
+        });
+    });
+    
     function openModal(modal) {
         modal.style.display = "block";
         document.body.style.overflow = "hidden";
@@ -533,11 +548,34 @@ document.addEventListener("DOMContentLoaded", function() {
     // Form submission
     const complaintForm = document.getElementById("complaint-form");
     if (complaintForm) {
-        complaintForm.addEventListener("submit", function(e) {
+        complaintForm.addEventListener("submit", async function(e) {
             e.preventDefault();
-            // Here you would typically send the form data to the server
-            alert("Your complaint has been submitted successfully!");
-            closeModal(complaintModal);
+            
+            try {
+                const formData = new FormData(this);
+                
+                const response = await fetch('/complaint/submit', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'  // Include session cookies
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(`Complaint submitted successfully! Your complaint ID: ${result.complaint_id}`);
+                    closeModal(complaintModal);
+                    loadRecentComplaints(); // Refresh the complaints list
+                } else {
+                    alert(`Error: ${result.message || 'Failed to submit complaint'}`);
+                }
+            } catch (error) {
+                console.error('Error submitting complaint:', error);
+                alert("There was an error submitting your complaint. Please try again.");
+            }
         });
     }
     
@@ -608,37 +646,23 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-// Complaint Form Handling
-document.getElementById('complaint-form')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    
-    const formData = new FormData(this);
-    
-    try {
-        const response = await fetch('/complaint/submit', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            alert(`Complaint submitted successfully! Your complaint ID: ${result.complaint_id}`);
-            closeModal(complaintModal);
-            await loadRecentComplaints(); // Refresh the complaints list
-        } else {
-            alert("There was an error submitting your complaint.");
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        alert("There was an error submitting your complaint. Please try again.");
-    }
-});
-
 // Load and display recent complaints
 async function loadRecentComplaints() {
     try {
-        const response = await fetch('/complaint/recent');
+        const response = await fetch('/complaint/recent', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'  // Include session cookies
+        });
+        
+        // Check if response redirects to login (session expired)
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        
         const complaints = await response.json();
         
         const complaintsGrid = document.querySelector('.complaints-grid');
@@ -683,14 +707,36 @@ async function loadRecentComplaints() {
         });
     } catch (error) {
         console.error('Error loading complaints:', error);
+        // If there's an authentication error, redirect to login
+        if (error.status === 401) {
+            window.location.href = '/auth/login';
+        }
     }
 }
 
 // Show details for a single complaint
 async function showComplaintDetails(complaintId) {
     try {
-        const response = await fetch(`/complaint/details?id=${complaintId}`);
+        const response = await fetch(`/complaint/details?id=${complaintId}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'  // Include session cookies
+        });
+        
+        // Check if response redirects to login (session expired)
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        
         const complaint = await response.json();
+        
+        if (complaint.error) {
+            alert(complaint.error);
+            return;
+        }
         
         const complaintDate = new Date(complaint.submitted_date);
         const formattedDate = complaintDate.toLocaleDateString('en-US', {
@@ -766,13 +812,31 @@ async function showComplaintDetails(complaintId) {
     } catch (error) {
         console.error('Error loading complaint details:', error);
         alert('Failed to load complaint details. Please try again.');
+        
+        // If there's an authentication error, redirect to login
+        if (error.status === 401) {
+            window.location.href = '/auth/login';
+        }
     }
 }
 
 // Show all complaints in a modal
 async function showAllComplaints() {
     try {
-        const response = await fetch('/complaint/all');
+        const response = await fetch('/complaint/all', {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'  // Include session cookies
+        });
+        
+        // Check if response redirects to login (session expired)
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        
         const complaints = await response.json();
         
         const detailsContent = document.getElementById('complaint-details-content');
@@ -813,8 +877,8 @@ async function showAllComplaints() {
             </div>
         `;
         
-        // Open the modal
-        const modal = document.getElementById('complaint-details-modal');
+         // Open the modal
+         const modal = document.getElementById('complaint-details-modal');
         modal.style.display = 'block';
         document.body.style.overflow = 'hidden';
         
@@ -835,6 +899,11 @@ async function showAllComplaints() {
     } catch (error) {
         console.error('Error loading all complaints:', error);
         alert('Failed to load complaints. Please try again.');
+        
+        // If there's an authentication error, redirect to login
+        if (error.status === 401) {
+            window.location.href = '/auth/login';
+        }
     }
 }
 
@@ -844,10 +913,228 @@ function getStatusClass(status) {
         'New': 'new',
         'In Progress': 'in-progress',
         'Resolved': 'resolved',
-        'Escalated': 'escalated'
+        'Escalated': 'escalated',
+        'Pending': 'pending',
+        'Closed': 'closed',
+        'Rejected': 'rejected'
     };
     return statusMap[status] || '';
 }
+
+// Handle feedback submission
+document.getElementById('feedback-form')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const complaintId = document.querySelector('.complaint-details-card .complaint-id')?.textContent;
+    
+    if (complaintId) {
+        formData.append('complaint_id', complaintId);
+    }
+    
+    try {
+        const response = await fetch('/feedback/submit', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Thank you for your feedback!');
+            closeModal(document.getElementById('feedback-modal'));
+        } else {
+            alert(`Error: ${result.message || 'Failed to submit feedback'}`);
+        }
+    } catch (error) {
+        console.error('Error submitting feedback:', error);
+        alert('There was an error submitting your feedback. Please try again.');
+    }
+});
+
+// Handle message submission
+document.addEventListener('click', function(e) {
+    if (e.target.closest('.btn-message')) {
+        e.preventDefault();
+        const complaintId = e.target.closest('.complaint-card')?.querySelector('.complaint-id')?.textContent ||
+                           document.querySelector('.complaint-details-card .complaint-id')?.textContent;
+        
+        if (complaintId) {
+            showMessageModal(complaintId);
+        }
+    }
+});
+
+// Show message modal
+async function showMessageModal(complaintId) {
+    try {
+        const response = await fetch(`/complaint/details?id=${complaintId}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        });
+        
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        
+        const complaint = await response.json();
+        
+        const detailsContent = document.getElementById('complaint-details-content');
+        detailsContent.innerHTML = `
+            <h2>Send Message Regarding ${complaint.id}</h2>
+            <div class="message-form-container">
+                <form id="message-form">
+                    <div class="form-group">
+                        <label for="message-subject">Subject</label>
+                        <input type="text" id="message-subject" name="subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message-content">Message</label>
+                        <textarea id="message-content" name="content" required></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i> Send Message</button>
+                        <button type="button" class="btn-secondary close-details">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        const modal = document.getElementById('complaint-details-modal');
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        // Add event listener for close button
+        detailsContent.querySelector('.close-details')?.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        // Handle message form submission
+        detailsContent.querySelector('#message-form')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            formData.append('complaint_id', complaintId);
+            
+            try {
+                const response = await fetch('/message/send', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    credentials: 'same-origin'
+                });
+                
+                if (response.redirected) {
+                    window.location.href = response.url;
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('Message sent successfully!');
+                    modal.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                } else {
+                    alert(`Error: ${result.message || 'Failed to send message'}`);
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('There was an error sending your message. Please try again.');
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error loading message form:', error);
+        alert('Failed to load message form. Please try again.');
+        
+        if (error.status === 401) {
+            window.location.href = '/auth/login';
+        }
+    }
+}
+
+// Initialize real-time updates
+function initializeRealTimeUpdates() {
+    // This would connect to a WebSocket or use polling in a real application
+    // For now, we'll just refresh the data periodically
+    setInterval(() => {
+        loadRecentComplaints();
+        updateNotificationCounts();
+    }, 300000); // Refresh every 5 minutes
+    
+    // Also refresh when the window gains focus
+    window.addEventListener('focus', () => {
+        loadRecentComplaints();
+        updateNotificationCounts();
+    });
+}
+
+// Initialize the application
+function initializeApp() {
+    // Check authentication status
+    fetch('/auth/status', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+            return;
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data && !data.authenticated) {
+            window.location.href = '/auth/login';
+        } else {
+            // User is authenticated, continue with initialization
+            initializeRealTimeUpdates();
+            
+            // Update user profile information
+            if (data && data.user) {
+                updateUserProfile(data.user);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Authentication check failed:', error);
+    });
+}
+
+// Update user profile information in the UI
+function updateUserProfile(user) {
+    const profileLinks = document.querySelectorAll('a[href="#profile"]');
+    profileLinks.forEach(link => {
+        if (link.querySelector('i.fa-user-circle')) {
+            link.innerHTML = `<i class="fas fa-user-circle"></i> ${user.name || 'Profile'}`;
+        }
+    });
+    
+    // Update any other user-specific UI elements
+}
+
+// Start the application
+initializeApp();
     </script>
 </body>
 </html>

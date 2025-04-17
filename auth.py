@@ -1,8 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 import json
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+from functools import wraps
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -50,6 +51,36 @@ def create_default_admin():
     else:
         print("Admin account already exists")
 
+# Login required decorator
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_email' not in session:
+            flash('Please login to access this page', 'error')
+            return redirect(url_for('auth.show_auth', form_type='login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Role required decorator
+def role_required(role):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if 'user_email' not in session:
+                flash('Please login to access this page', 'error')
+                return redirect(url_for('auth.show_auth', form_type='login'))
+            
+            users = load_users()
+            user = users.get(session['user_email'])
+            
+            if not user or user['role'] != role:
+                flash(f'Access denied. This page is only for {role}s', 'error')
+                return redirect(url_for('home'))
+            
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 @auth_bp.route('/<form_type>')
 def show_auth(form_type):
     # Validate form_type
@@ -71,6 +102,11 @@ def login():
             if not user or not check_password_hash(user['password'], password):
                 flash('Invalid email or password', 'error')
                 return redirect(url_for('auth.show_auth', form_type='login'))
+            
+            # Store user data in session
+            session['user_email'] = email
+            session['user_role'] = user['role']
+            session['user_name'] = user['full_name']
             
             # Admin handling
             if user.get('is_admin', False):
@@ -130,3 +166,10 @@ def signup():
         return redirect(url_for('auth.show_auth', form_type='login'))
     
     return redirect(url_for('auth.show_auth', form_type='signup'))
+
+@auth_bp.route('/logout')
+def logout():
+    # Clear the session
+    session.clear()
+    flash('You have been logged out', 'success')
+    return redirect(url_for('home'))

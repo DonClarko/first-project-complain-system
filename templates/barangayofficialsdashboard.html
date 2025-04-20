@@ -446,6 +446,53 @@ document.addEventListener("DOMContentLoaded", function() {
     // Mobile menu toggle
     const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
     const mobileMenu = document.querySelector(".mobile-menu");
+    const contentArea = document.querySelector('.content-area');
+    if (contentArea) {
+        contentArea.addEventListener('click', function(e) {
+            const toggleButton = e.target.closest('.btn-link');
+            if (!toggleButton) return;
+            
+            e.preventDefault();
+            
+            // Get current state
+            const isShowingAll = toggleButton.getAttribute('data-showing-all') === 'true';
+            
+            // Get current view
+            const currentView = getCurrentViewFromSidebar() || 'all';
+            
+            // Toggle the view
+            loadComplaints(currentView, !isShowingAll);
+        });
+    }
+
+    const viewAllModal = document.createElement('div');
+    viewAllModal.id = 'view-all-modal';
+    viewAllModal.className = 'modal';
+    viewAllModal.innerHTML = `
+        <div class="modal-content large-modal">
+            <span class="close-btn">&times;</span>
+            <h2 id="view-all-title"><i class="fas fa-list"></i> All Complaints</h2>
+            <div class="modal-body">
+                <table class="complaints-table full-width">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Type</th>
+                            <th>Submitted</th>
+                            <th>Resident</th>
+                            <th>Status</th>
+                            <th>Urgency</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="view-all-complaints">
+                        <!-- Complaints will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(viewAllModal);
     
     if (mobileMenuToggle && mobileMenu) {
         mobileMenuToggle.addEventListener("click", () => {
@@ -661,10 +708,10 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Get current active view or default to 'all'
         const currentView = getCurrentViewFromSidebar() || 'all';
-        loadComplaints(currentView);
+        loadComplaints(currentView, false); // Initially show limited view
     }
     
-    // Set up event listeners for complaint filters in sidebar
+    // Modify sidebar click handler to reset to limited view on filter change
     const sidebar = document.querySelector('.sidebar');
     if (sidebar) {
         sidebar.addEventListener('click', function(e) {
@@ -704,9 +751,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     break;
             }
             
-            loadComplaints(status);
+            // Reset to limited view when changing filters
+            loadComplaints(status, false);
         });
     }
+
     
     // Handle action buttons in the complaints table
     const complaintsTable = document.querySelector('.complaints-table');
@@ -799,7 +848,14 @@ function updateDashboard() {
         
         // Reload complaints for current view
         const currentView = getCurrentViewFromSidebar() || 'all';
-        loadComplaints(currentView);
+        
+        // Maintain current view state (all or limited)
+        const toggleButton = document.querySelector('.btn-link');
+        const isShowingAll = toggleButton ? 
+            toggleButton.getAttribute('data-showing-all') === 'true' : 
+            false;
+            
+        loadComplaints(currentView, isShowingAll);
     }
 }
 
@@ -878,7 +934,7 @@ function updateBadgeCount(selector, count) {
 }
 
 // Load complaints by status
-function loadComplaints(status) {
+function loadComplaints(status, showAll = false) {
     fetch(`/officials/complaints/${status}`)
         .then(response => response.json())
         .then(complaints => {
@@ -900,7 +956,10 @@ function loadComplaints(status) {
                 `;
                 tableBody.appendChild(emptyRow);
             } else {
-                complaints.forEach(complaint => {
+                // Either show all complaints or limit to 4
+                const displayComplaints = showAll ? complaints : complaints.slice(0, 4);
+                
+                displayComplaints.forEach(complaint => {
                     appendComplaintRow(tableBody, complaint);
                 });
             }
@@ -908,12 +967,39 @@ function loadComplaints(status) {
             // Update heading to reflect the status
             updateSectionHeader(status);
             
+            // Update the toggle button text based on current state
+            updateToggleButtonText(complaints.length, showAll);
+            
             // Highlight the active filter in sidebar
             highlightActiveSidebarItem(status);
         })
         .catch(error => {
             console.error(`Error loading ${status} complaints:`, error);
         });
+}
+
+// New function to update the toggle button text
+function updateToggleButtonText(totalCount, showingAll) {
+    const toggleButton = document.querySelector('.btn-link');
+    if (!toggleButton) return;
+    
+    if (totalCount <= 4) {
+        // Hide the button if there are 4 or fewer complaints
+        toggleButton.style.display = 'none';
+        return;
+    }
+    
+    // Show the button
+    toggleButton.style.display = 'inline-block';
+    
+    // Update text based on current state
+    if (showingAll) {
+        toggleButton.innerHTML = '<i class="fas fa-chevron-up"></i> Show Less';
+        toggleButton.setAttribute('data-showing-all', 'true');
+    } else {
+        toggleButton.innerHTML = '<i class="fas fa-list"></i> View All';
+        toggleButton.setAttribute('data-showing-all', 'false');
+    }
 }
 
 // Helper function to create and append a complaint row

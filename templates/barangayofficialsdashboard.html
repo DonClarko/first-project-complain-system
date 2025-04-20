@@ -407,7 +407,49 @@
     </footer>
 
     <script>
+// Replace this script section in your HTML file
+
 document.addEventListener("DOMContentLoaded", function() {
+    // Mobile menu toggle
+    const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
+    const mobileMenu = document.querySelector(".mobile-menu");
+    
+    if (mobileMenuToggle && mobileMenu) {
+        mobileMenuToggle.addEventListener("click", () => {
+            mobileMenu.style.display = mobileMenu.style.display === "block" ? "none" : "block";
+        });
+    }
+    
+    // Mark as read buttons
+    const markReadButtons = document.querySelectorAll(".btn-mark-read");
+    markReadButtons.forEach(btn => {
+        btn.addEventListener("click", function() {
+            const card = this.closest(".message-card, .notification-card");
+            if (card) {
+                card.classList.remove("unread");
+                updateNotificationCounts();
+            }
+        });
+    });
+    
+    // Define the updateNotificationCounts function in the proper scope
+    function updateNotificationCounts() {
+        // This would be more dynamic in a real application
+        const unreadMessages = document.querySelectorAll(".message-card.unread").length;
+        const unreadNotifications = document.querySelectorAll(".notification-card.unread").length;
+        
+        document.querySelectorAll(".notification-count").forEach(el => {
+            if (el.closest("#messages")) {
+                el.textContent = unreadMessages;
+            } else if (el.closest("#notifications")) {
+                el.textContent = unreadNotifications;
+            }
+        });
+    }
+    
+    // Initialize counts on page load
+    updateNotificationCounts();
+    
     // Modal control
     const messageModal = document.getElementById("message-modal");
     const notificationSettingsModal = document.getElementById("notification-settings-modal");
@@ -432,21 +474,27 @@ document.addEventListener("DOMContentLoaded", function() {
     });
     
     function openModal(modal) {
-        modal.style.display = "block";
-        document.body.style.overflow = "hidden";
+        if (modal) {
+            modal.style.display = "block";
+            document.body.style.overflow = "hidden";
+        }
     }
     
     function closeModal(modal) {
-        modal.style.display = "none";
-        document.body.style.overflow = "auto";
+        if (modal) {
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+        }
     }
     
-    openMessageButtons.forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            e.preventDefault();
-            openModal(messageModal);
+    if (openMessageButtons) {
+        openMessageButtons.forEach(btn => {
+            btn.addEventListener("click", (e) => {
+                e.preventDefault();
+                openModal(messageModal);
+            });
         });
-    });
+    }
     
     if (openNotificationSettingsButton) {
         openNotificationSettingsButton.addEventListener("click", (e) => {
@@ -455,61 +503,29 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    document.querySelectorAll('.btn-reply').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            openModal(feedbackReplyModal);
+    if (document.querySelectorAll('.btn-reply')) {
+        document.querySelectorAll('.btn-reply').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                openModal(feedbackReplyModal);
+            });
         });
-    });
+    }
     
-    closeButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const modal = btn.closest(".modal");
-            closeModal(modal);
+    if (closeButtons) {
+        closeButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const modal = btn.closest(".modal");
+                closeModal(modal);
+            });
         });
-    });
+    }
     
     window.addEventListener("click", (e) => {
         if (e.target.classList.contains("modal")) {
             closeModal(e.target);
         }
     });
-    
-    // Mobile menu toggle
-    const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
-    const mobileMenu = document.querySelector(".mobile-menu");
-    
-    if (mobileMenuToggle && mobileMenu) {
-        mobileMenuToggle.addEventListener("click", () => {
-            mobileMenu.style.display = mobileMenu.style.display === "block" ? "none" : "block";
-        });
-    }
-    
-    // Mark as read buttons
-    const markReadButtons = document.querySelectorAll(".btn-mark-read");
-    markReadButtons.forEach(btn => {
-        btn.addEventListener("click", function() {
-            const card = this.closest(".message-card, .notification-card");
-            if (card) {
-                card.classList.remove("unread");
-                updateNotificationCounts();
-            }
-        });
-    });
-    
-    function updateNotificationCounts() {
-        // This would be more dynamic in a real application
-        const unreadMessages = document.querySelectorAll(".message-card.unread").length;
-        const unreadNotifications = document.querySelectorAll(".notification-card.unread").length;
-        
-        document.querySelectorAll(".notification-count").forEach(el => {
-            if (el.closest("#messages")) {
-                el.textContent = unreadMessages;
-            } else if (el.closest("#notifications")) {
-                el.textContent = unreadNotifications;
-            }
-        });
-    }
     
     // Form submissions
     const messageForm = document.getElementById("message-form");
@@ -542,21 +558,107 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Initialize
-    updateNotificationCounts();
+    // Initialize real-time updates
+    initializeRealTimeUpdates();
+    
+    // Initialize event source for real-time updates if it exists
+    try {
+        const eventSource = new EventSource('/complaint/stream');
+        
+        // Handle incoming complaint updates
+        eventSource.onmessage = function(event) {
+            const complaints = JSON.parse(event.data);
+            updateDashboard(complaints);
+        };
+        
+        // Initialize the dashboard
+        loadStats();
+        loadComplaints('all');
+        
+        // Set up event listeners
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar) {
+            sidebar.addEventListener('click', function(e) {
+                if (e.target.matches('a[href="#new-complaints"]')) {
+                    e.preventDefault();
+                    loadComplaints('New');
+                } else if (e.target.matches('a[href="#pending"]')) {
+                    e.preventDefault();
+                    loadComplaints('Pending');
+                } else if (e.target.matches('a[href="#in-progress"]')) {
+                    e.preventDefault();
+                    loadComplaints('In Progress');
+                } else if (e.target.matches('a[href="#escalated"]')) {
+                    e.preventDefault();
+                    loadEscalatedComplaints();
+                }
+            });
+        }
+        
+        // Handle status update buttons
+        const complaintsTable = document.querySelector('.complaints-table');
+        if (complaintsTable) {
+            complaintsTable.addEventListener('click', function(e) {
+                // View complaint details
+                if (e.target.closest('.btn-view')) {
+                    e.preventDefault();
+                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
+                    viewComplaintDetails(complaintId);
+                }
+                
+                // Assign complaint
+                if (e.target.closest('.btn-assign')) {
+                    e.preventDefault();
+                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
+                    showAssignModal(complaintId);
+                }
+                
+                // Message resident
+                if (e.target.closest('.btn-message')) {
+                    e.preventDefault();
+                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
+                    const residentEmail = e.target.closest('tr').getAttribute('data-resident-email');
+                    showMessageModal(complaintId, residentEmail);
+                }
+                
+                // Update status
+                if (e.target.closest('.btn-update')) {
+                    e.preventDefault();
+                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
+                    showStatusUpdateModal(complaintId);
+                }
+                
+                // Escalate complaint
+                if (e.target.closest('.btn-escalate')) {
+                    e.preventDefault();
+                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
+                    showEscalateModal(complaintId);
+                }
+            });
+        }
+        
+        // Handle form submissions
+        setupFormHandlers();
+    } catch (error) {
+        console.error("Error initializing event source:", error);
+    }
 });
 
-// Initialize real-time updates
+// Define utility functions outside the DOM ready handler
 function initializeRealTimeUpdates() {
     // This would connect to a WebSocket or use polling in a real application
     // For now, we'll just refresh the data periodically
     setInterval(() => {
-        updateNotificationCounts();
+        if (typeof updateNotificationCounts === 'function') {
+            updateNotificationCounts();
+        }
     }, 300000); // Refresh every 5 minutes
     
     // Also refresh when the window gains focus
     window.addEventListener('focus', () => {
-        updateNotificationCounts();
+        if (typeof updateNotificationCounts === 'function') {
+            updateNotificationCounts();
+        }
     });
 }
 
@@ -607,8 +709,230 @@ function updateUserProfile(user) {
     // Update any other user-specific UI elements
 }
 
+// Load dashboard statistics
+function loadStats() {
+    fetch('/officials/stats')
+        .then(response => response.json())
+        .then(data => {
+            const statCards = document.querySelectorAll('.stat-card');
+            if (statCards.length >= 4) {
+                document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = data.total;
+                document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = data.pending + data.new;
+                document.querySelector('.stat-card:nth-child(2) .stat-urgent').innerHTML = 
+                    `<i class="fas fa-exclamation-triangle"></i> ${data.urgent_pending} urgent`;
+                document.querySelector('.stat-card:nth-child(3) .stat-number').textContent = data.resolved;
+                document.querySelector('.stat-card:nth-child(4) .stat-number').textContent = 
+                    `${data.avg_resolution_time} days`;
+            }
+                
+            // Update sidebar badges
+            const newBadge = document.querySelector('a[href="#new-complaints"] .badge');
+            const pendingBadge = document.querySelector('a[href="#pending"] .badge');
+            const inProgressBadge = document.querySelector('a[href="#in-progress"] .badge');
+            const escalatedBadge = document.querySelector('a[href="#escalated"] .badge');
+            
+            if (newBadge) newBadge.textContent = data.new;
+            if (pendingBadge) pendingBadge.textContent = data.pending;
+            if (inProgressBadge) inProgressBadge.textContent = data.in_progress;
+            
+            // Calculate escalated complaints (these would be marked with escalated=true)
+            const escalatedComplaints = data.escalated || 0;
+            if (escalatedBadge) escalatedBadge.textContent = escalatedComplaints;
+        })
+        .catch(error => {
+            console.error('Error loading stats:', error);
+        });
+}
+
+// Load complaints by status
+function loadComplaints(status) {
+    fetch(`/officials/complaints/${status}`)
+        .then(response => response.json())
+        .then(complaints => {
+            const tableBody = document.querySelector('.complaints-table tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = ''; // Clear current entries
+            
+            complaints.forEach(complaint => {
+                const row = document.createElement('tr');
+                row.setAttribute('data-complaint-id', complaint.id);
+                row.setAttribute('data-resident-email', complaint.user_email);
+                
+                // Format date for display
+                const submittedDate = new Date(complaint.submitted_date);
+                const now = new Date();
+                const diffTime = Math.abs(now - submittedDate);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                let dateDisplay;
+                if (diffDays === 0) {
+                    dateDisplay = 'Today';
+                } else if (diffDays === 1) {
+                    dateDisplay = 'Yesterday';
+                } else {
+                    dateDisplay = `${diffDays} days ago`;
+                }
+                
+                // Create action buttons based on status
+                let actionButtons = `
+                    <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
+                `;
+                
+                if (complaint.status === 'New') {
+                    actionButtons += `
+                        <a href="#assign" class="btn-action btn-assign"><i class="fas fa-user-tag"></i></a>
+                        <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                    `;
+                } else if (complaint.status === 'Pending' || complaint.status === 'In Progress') {
+                    actionButtons += `
+                        <a href="#update" class="btn-action btn-update"><i class="fas fa-edit"></i></a>
+                        <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                    `;
+                    
+                    if (!complaint.escalated) {
+                        actionButtons += `
+                            <a href="#escalate" class="btn-action btn-escalate"><i class="fas fa-level-up-alt"></i></a>
+                        `;
+                    }
+                }
+                
+                row.innerHTML = `
+                    <td>${complaint.id}</td>
+                    <td>${complaint.category}</td>
+                    <td>${dateDisplay}</td>
+                    <td>${complaint.user_name || 'Resident'}</td>
+                    <td><span class="status ${complaint.status.toLowerCase().replace(' ', '-')}">${complaint.status}</span></td>
+                    <td><span class="urgency ${complaint.urgency.toLowerCase()}">${complaint.urgency}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            ${actionButtons}
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Update heading to reflect the status
+            const sectionHeader = document.querySelector('.content-area .section-header h2');
+            if (sectionHeader) {
+                const statusText = status === 'all' ? 'All' : status;
+                sectionHeader.innerHTML = `<i class="fas fa-list"></i> ${statusText} Complaints`;
+            }
+        })
+        .catch(error => {
+            console.error(`Error loading ${status} complaints:`, error);
+        });
+}
+
+// Load only escalated complaints
+function loadEscalatedComplaints() {
+    fetch('/officials/complaints/all')
+        .then(response => response.json())
+        .then(complaints => {
+            // Filter for escalated complaints
+            const escalatedComplaints = complaints.filter(c => c.escalated === true);
+            
+            const tableBody = document.querySelector('.complaints-table tbody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = ''; // Clear current entries
+            
+            escalatedComplaints.forEach(complaint => {
+                const row = document.createElement('tr');
+                row.setAttribute('data-complaint-id', complaint.id);
+                row.setAttribute('data-resident-email', complaint.user_email);
+                
+                // Format date for display
+                const submittedDate = new Date(complaint.submitted_date);
+                const now = new Date();
+                const diffTime = Math.abs(now - submittedDate);
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                let dateDisplay;
+                if (diffDays === 0) {
+                    dateDisplay = 'Today';
+                } else if (diffDays === 1) {
+                    dateDisplay = 'Yesterday';
+                } else {
+                    dateDisplay = `${diffDays} days ago`;
+                }
+                
+                row.innerHTML = `
+                    <td>${complaint.id}</td>
+                    <td>${complaint.category}</td>
+                    <td>${dateDisplay}</td>
+                    <td>${complaint.user_name || 'Resident'}</td>
+                    <td><span class="status escalated">Escalated</span></td>
+                    <td><span class="urgency ${complaint.urgency.toLowerCase()}">${complaint.urgency}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
+                            <a href="#resolve-escalated" class="btn-action btn-resolve-escalated"><i class="fas fa-check-circle"></i></a>
+                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // Update heading
+            const sectionHeader = document.querySelector('.content-area .section-header h2');
+            if (sectionHeader) {
+                sectionHeader.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Escalated Complaints`;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading escalated complaints:', error);
+        });
+}
+
+// View complaint details
+function viewComplaintDetails(complaintId) {
+    alert(`View details for complaint: ${complaintId}`);
+}
+
+// Show modal to assign complaint to an official
+function showAssignModal(complaintId) {
+    alert(`Assign complaint: ${complaintId}`);
+}
+
+// Show modal to message a resident
+function showMessageModal(complaintId, residentEmail) {
+    alert(`Message resident regarding complaint: ${complaintId}`);
+}
+
+// Show modal to update complaint status
+function showStatusUpdateModal(complaintId) {
+    alert(`Update status for complaint: ${complaintId}`);
+}
+
+// Show modal to escalate a complaint
+function showEscalateModal(complaintId) {
+    alert(`Escalate complaint: ${complaintId}`);
+}
+
+// Setup form submission handlers
+function setupFormHandlers() {
+    // These would be the form submission handlers for the various modals
+}
+
+// Update dashboard with real-time data
+function updateDashboard(complaints) {
+    // Refresh stats
+    loadStats();
+    
+    // Refresh the current view
+    // This could be more sophisticated by checking which view is active
+    loadComplaints('all');
+}
+
 // Start the application
-initializeApp();
+document.addEventListener("DOMContentLoaded", function() {
+    initializeApp();
+});
     </script>
 </body>
 </html>

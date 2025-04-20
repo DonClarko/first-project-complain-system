@@ -20,7 +20,7 @@ def calculate_urgency(category):
         'water': 'Medium',
         'others': 'Low'
     }
-    return urgency_map.get(category, 'Low')
+    return urgency_map.get(category.lower(), 'Low')
 
 def estimate_resolution(urgency):
     return {
@@ -224,16 +224,30 @@ def get_official_complaints():
     )
     return jsonify(sorted_complaints)
 
-# API route to get complaints by status for officials
+# API route to get complaints by status for officials - UPDATED
 @complaint_bp.route('/officials/complaints/<status>')
 @login_required
 @role_required('official')
 def get_complaints_by_status(status):
     complaints = load_complaints()
+    
+    # Handle the 'all' case
     if status.lower() == 'all':
         filtered_complaints = complaints
+    # Handle 'escalated' specifically
+    elif status.lower() == 'escalated':
+         filtered_complaints = [c for c in complaints if c.get('escalated', True) and c.get('status') == 'Escalated']
+    # Handle normal status filtering
     else:
-        filtered_complaints = [c for c in complaints if c.get('status', '').lower() == status.lower()]
+        status_map = {
+            'new': 'New',
+            'pending': 'Pending Review',
+            'pending-review': 'Pending Review',
+            'in-progress': 'In Progress',
+            'resolved': 'Resolved'
+        }
+        actual_status = status_map.get(status.lower(), status.capitalize())
+        filtered_complaints = [c for c in complaints if c.get('status') == actual_status]
     
     # Sort by urgency (High first) then by date (newest first)
     sorted_complaints = sorted(
@@ -246,7 +260,7 @@ def get_complaints_by_status(status):
     
     return jsonify(sorted_complaints)
 
-# Route to handle complaint status updates by officials
+# Route to handle complaint status updates by officials - UPDATED
 @complaint_bp.route('/officials/update', methods=['POST'])
 @login_required
 @role_required('official')
@@ -256,20 +270,33 @@ def update_complaint_status():
         complaint_id = data.get('complaint_id')
         new_status = data.get('status')
         action_note = data.get('action_note', '')
+        notify_resident = data.get('notify_resident', True)  # Default to True for backward compatibility
         
         if not complaint_id or not new_status:
             return jsonify({'success': False, 'error': 'Missing required fields'}), 400
         
         complaints = load_complaints()
         
+        # Map status values to standardized format
+        status_map = {
+            'new': 'New',
+            'pending': 'Pending Review',
+            'in progress': 'In Progress',
+            'resolved': 'Resolved',
+            'escalated': 'Escalated'
+        }
+        
+        # Standardize the status if it matches a key in our map
+        standardized_status = status_map.get(new_status.lower(), new_status)
+        
         # Find the specific complaint
         for complaint in complaints:
             if complaint['id'] == complaint_id:
                 old_status = complaint['status']
-                complaint['status'] = new_status
+                complaint['status'] = standardized_status
                 
                 # If being escalated
-                if data.get('escalate') == True:
+                if standardized_status == 'Escalated' or data.get('escalate') == True:
                     complaint['escalated'] = True
                     
                 # If being assigned
@@ -280,7 +307,7 @@ def update_complaint_status():
                 update_entry = {
                     'timestamp': datetime.now().isoformat(),
                     'from_status': old_status,
-                    'to_status': new_status,
+                    'to_status': standardized_status,
                     'action_note': action_note,
                     'by_official': session.get('user_email'),
                     'official_name': session.get('user_name', 'Barangay Official')
@@ -292,12 +319,13 @@ def update_complaint_status():
                 complaint['updates'].append(update_entry)
                 
                 # Send notification to the resident
-                add_resident_notification(
-                    complaint['user_email'],
-                    complaint['id'],
-                    f"Complaint status updated to {new_status}",
-                    f"Your complaint has been {new_status.lower()}. {action_note if action_note else ''}"
-                )
+                if notify_resident:
+                    add_resident_notification(
+                        complaint['user_email'],
+                        complaint['id'],
+                        f"Complaint status updated to {standardized_status}",
+                        f"Your complaint has been {standardized_status.lower()}. {action_note if action_note else ''}"
+                    )
                 
                 save_complaints(complaints)
                 return jsonify({'success': True})
@@ -308,7 +336,7 @@ def update_complaint_status():
         print(f"Error updating complaint: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# Route to get stats for officials dashboard
+# Route to get stats for officials dashboard - UPDATED
 @complaint_bp.route('/officials/stats')
 @login_required
 @role_required('official')
@@ -318,12 +346,13 @@ def get_complaint_stats():
     # Calculate overall stats
     total = len(complaints)
     new_count = len([c for c in complaints if c.get('status') == 'New'])
-    pending_count = len([c for c in complaints if c.get('status') == 'Pending'])
+    pending_count = len([c for c in complaints if c.get('status') == 'Pending Review'])
     in_progress_count = len([c for c in complaints if c.get('status') == 'In Progress'])
     resolved_count = len([c for c in complaints if c.get('status') == 'Resolved'])
+    escalated_count = len([c for c in complaints if c.get('escalated', True) and c.get('status') == 'Escalated'])
     
-    # Count urgent complaints
-    urgent_pending = len([c for c in complaints if c.get('status') in ['New', 'Pending'] and c.get('urgency') == 'High'])
+    # Count urgent pending complaints
+    urgent_pending = len([c for c in complaints if c.get('status') in ['New', 'Pending Review'] and c.get('urgency') == 'High'])
     
     # Calculate average resolution time for resolved complaints
     resolution_times = []
@@ -355,6 +384,7 @@ def get_complaint_stats():
         'pending': pending_count,
         'in_progress': in_progress_count,
         'resolved': resolved_count,
+        'escalated': escalated_count,
         'urgent_pending': urgent_pending,
         'avg_resolution_time': round(avg_resolution_time, 1),  # Round to 1 decimal place
         'categories': categories
@@ -452,7 +482,7 @@ def assign_complaint():
     
     return jsonify({'success': False, 'error': 'Complaint not found'}), 404
 
-# Route to mark a complaint as escalated and provide resolution
+# Route to mark a complaint as escalated and provide resolution - UPDATED
 @complaint_bp.route('/officials/escalate', methods=['POST'])
 @login_required
 @role_required('official')
@@ -470,11 +500,14 @@ def escalate_complaint():
         if complaint['id'] == complaint_id:
             complaint['escalated'] = True
             complaint['escalate_note'] = escalate_note
+            complaint['status'] = 'Escalated'  # Update status to reflect escalation
             
             # Add update entry
             update_entry = {
                 'timestamp': datetime.now().isoformat(),
                 'action': 'escalated',
+                'from_status': complaint.get('status', 'New'),
+                'to_status': 'Escalated',
                 'note': escalate_note,
                 'by_official': session.get('user_email'),
                 'official_name': session.get('user_name', 'Barangay Official')
@@ -522,7 +555,7 @@ def resolve_escalated():
             update_entry = {
                 'timestamp': datetime.now().isoformat(),
                 'action': 'resolution_provided',
-                'from_status': complaint.get('status', 'Escalated'),
+                'from_status': 'Escalated',
                 'to_status': 'In Progress',
                 'resolution': resolution,
                 'by_official': session.get('user_email'),

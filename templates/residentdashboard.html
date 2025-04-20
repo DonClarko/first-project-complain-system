@@ -647,6 +647,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 // Load and display recent complaints
+// Load and display recent complaints
 async function loadRecentComplaints() {
     try {
         const response = await fetch('/complaint/recent', {
@@ -675,7 +676,10 @@ async function loadRecentComplaints() {
             return;
         }
         
-        complaints.forEach(complaint => {
+        // Limit to displaying only 3 complaints
+        const complaintsToShow = complaints.slice(0, 3);
+        
+        complaintsToShow.forEach(complaint => {
             const complaintDate = new Date(complaint.submitted_date);
             const formattedDate = complaintDate.toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -705,6 +709,12 @@ async function loadRecentComplaints() {
             
             complaintsGrid.appendChild(complaintCard);
         });
+        
+        // If there are more complaints than shown, make sure the "View All" link is visible
+        const viewAllLink = document.querySelector('a[href="#all-complaints"]');
+        if (viewAllLink && complaints.length > 3) {
+            viewAllLink.style.display = 'inline-block';
+        }
     } catch (error) {
         console.error('Error loading complaints:', error);
         // If there's an authentication error, redirect to login

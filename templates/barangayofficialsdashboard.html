@@ -81,12 +81,12 @@
                 <div class="sidebar">
                     <h3>Quick Actions</h3>
                     <ul>
+                        <li><a href="#all-complaints"><i class="fas fa-list"></i> All Complaints <span class="badge">142</span></a></li>
                         <li><a href="#new-complaints"><i class="fas fa-plus-circle"></i> New Complaints <span class="badge">5</span></a></li>
                         <li><a href="#pending"><i class="fas fa-clock"></i> Pending Review <span class="badge">12</span></a></li>
                         <li><a href="#in-progress"><i class="fas fa-spinner"></i> In Progress <span class="badge">8</span></a></li>
                         <li><a href="#escalated"><i class="fas fa-exclamation-triangle"></i> Escalated <span class="badge">3</span></a></li>
-                        <li><a href="#generate-report"><i class="fas fa-file-alt"></i> Generate Report</a></li>
-                        <li><a href="#settings"><i class="fas fa-cog"></i> Settings</a></li>
+                        <li><a href="#resolved"><i class="fas fa-check-circle"></i> Resolved <span class="badge">89</span></a></li>
                     </ul>
                 </div>
 
@@ -119,7 +119,7 @@
                                 <td>
                                     <div class="action-buttons">
                                         <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
-                                        <a href="#assign" class="btn-action btn-assign"><i class="fas fa-user-tag"></i></a>
+                                        <a href="#update" class="btn-action btn-update"><i class="fas fa-edit"></i></a>
                                         <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
                                     </div>
                                 </td>
@@ -149,7 +149,7 @@
                                 <td>
                                     <div class="action-buttons">
                                         <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
-                                        <a href="#escalate" class="btn-action btn-escalate"><i class="fas fa-level-up-alt"></i></a>
+                                        <a href="#update" class="btn-action btn-update"><i class="fas fa-edit"></i></a>
                                         <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
                                     </div>
                                 </td>
@@ -406,9 +406,42 @@
         </div>
     </footer>
 
-    <script>
-// Replace this script section in your HTML file
+    <!-- Status Update Modal -->
+    <div id="status-update-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2><i class="fas fa-edit"></i> Update Complaint Status</h2>
+            <form id="status-update-form">
+                <input type="hidden" id="complaint-id" name="complaint_id">
+                <div class="form-group">
+                    <label for="status">Status:</label>
+                    <select id="status" name="status" required>
+                        <option value="">Select Status</option>
+                        <option value="Pending Review">Pending Review</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Escalated">Escalated</option>
+                        <option value="Resolved">Resolved</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="status-notes">Notes:</label>
+                    <textarea id="status-notes" name="notes" rows="4" placeholder="Enter details about this status update..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="notify-resident">
+                        <input type="checkbox" id="notify-resident" name="notify_resident" checked>
+                        Notify resident about this update
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-primary">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
+<script>
 document.addEventListener("DOMContentLoaded", function() {
     // Mobile menu toggle
     const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
@@ -432,9 +465,8 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
     
-    // Define the updateNotificationCounts function in the proper scope
+    // Update notification counts
     function updateNotificationCounts() {
-        // This would be more dynamic in a real application
         const unreadMessages = document.querySelectorAll(".message-card.unread").length;
         const unreadNotifications = document.querySelectorAll(".notification-card.unread").length;
         
@@ -451,12 +483,14 @@ document.addEventListener("DOMContentLoaded", function() {
     updateNotificationCounts();
     
     // Modal control
+    const statusUpdateModal = document.getElementById("status-update-modal");
     const messageModal = document.getElementById("message-modal");
     const notificationSettingsModal = document.getElementById("notification-settings-modal");
     const feedbackReplyModal = document.getElementById("feedback-reply-modal");
     const openMessageButtons = document.querySelectorAll('a[href="#new-message"], .btn-reply');
     const openNotificationSettingsButton = document.querySelector('a[href="#notification-settings"]');
     const closeButtons = document.querySelectorAll(".close-btn");
+    const cancelButtons = document.querySelectorAll(".cancel-btn");
     
     // Add logout functionality
     const logoutLinks = document.querySelectorAll('a[href*="login"]');
@@ -487,6 +521,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
     
+    // Open message modal
     if (openMessageButtons) {
         openMessageButtons.forEach(btn => {
             btn.addEventListener("click", (e) => {
@@ -496,6 +531,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
+    // Open notification settings modal
     if (openNotificationSettingsButton) {
         openNotificationSettingsButton.addEventListener("click", (e) => {
             e.preventDefault();
@@ -503,6 +539,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
+    // Open feedback reply modal
     if (document.querySelectorAll('.btn-reply')) {
         document.querySelectorAll('.btn-reply').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -512,6 +549,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
+    // Close buttons for modals
     if (closeButtons) {
         closeButtons.forEach(btn => {
             btn.addEventListener("click", () => {
@@ -521,13 +559,44 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
+    // Cancel buttons for modals
+    if (cancelButtons) {
+        cancelButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const modal = btn.closest(".modal");
+                closeModal(modal);
+            });
+        });
+    }
+    
+    // Close modal when clicking outside
     window.addEventListener("click", (e) => {
         if (e.target.classList.contains("modal")) {
             closeModal(e.target);
         }
     });
     
-    // Form submissions
+    // Status Update Form Submission
+    const statusUpdateForm = document.getElementById("status-update-form");
+    if (statusUpdateForm) {
+        statusUpdateForm.addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const complaintId = document.getElementById("complaint-id").value;
+            const status = document.getElementById("status").value;
+            const notes = document.getElementById("status-notes").value;
+            const notifyResident = document.getElementById("notify-resident").checked;
+            
+            // Call the function with the correct parameters
+            updateComplaintStatus(complaintId, status, notes, notifyResident);
+            
+            // Close the modal
+            const modal = document.getElementById("status-update-modal");
+            closeModal(modal);
+        });
+    }
+    
+    // Other Form submissions
     const messageForm = document.getElementById("message-form");
     if (messageForm) {
         messageForm.addEventListener("submit", async function(e) {
@@ -575,70 +644,93 @@ document.addEventListener("DOMContentLoaded", function() {
         loadStats();
         loadComplaints('all');
         
-        // Set up event listeners
+        // Set up event listeners for complaint filters
         const sidebar = document.querySelector('.sidebar');
         if (sidebar) {
             sidebar.addEventListener('click', function(e) {
-                if (e.target.matches('a[href="#new-complaints"]')) {
-                    e.preventDefault();
-                    loadComplaints('New');
-                } else if (e.target.matches('a[href="#pending"]')) {
-                    e.preventDefault();
-                    loadComplaints('Pending');
-                } else if (e.target.matches('a[href="#in-progress"]')) {
-                    e.preventDefault();
-                    loadComplaints('In Progress');
-                } else if (e.target.matches('a[href="#escalated"]')) {
-                    e.preventDefault();
-                    loadEscalatedComplaints();
+                e.preventDefault();
+                const link = e.target.closest('a[href^="#"]');
+                if (!link) return;
+                
+                const href = link.getAttribute('href');
+                let status = 'all';
+                
+                // Set the active class on the clicked link and remove from others
+                sidebar.querySelectorAll('a').forEach(a => a.classList.remove('active'));
+                link.classList.add('active');
+                
+                // Determine which complaints to load based on the href
+                switch(href) {
+                    case '#all-complaints':
+                        status = 'all';
+                        break;
+                    case '#new-complaints':
+                        status = 'New';
+                        break;
+                    case '#pending':
+                        status = 'Pending Review';
+                        break;
+                    case '#in-progress':
+                        status = 'In Progress';
+                        break;
+                    case '#escalated':
+                        loadEscalatedComplaints();
+                        return; // Return early as we're calling a specialized function
+                    case '#resolved':
+                        status = 'Resolved';
+                        break;
+                    default:
+                        status = 'all';
+                        break;
                 }
+                
+                loadComplaints(status);
             });
         }
         
-        // Handle status update buttons
+        // Handle action buttons in the complaints table
         const complaintsTable = document.querySelector('.complaints-table');
         if (complaintsTable) {
             complaintsTable.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = e.target.closest('.btn-action');
+                if (!target) return;
+                
+                const row = target.closest('tr');
+                const complaintId = row.getAttribute('data-complaint-id') || row.cells[0].textContent;
+                const residentEmail = row.getAttribute('data-resident-email') || '';
+                
                 // View complaint details
-                if (e.target.closest('.btn-view')) {
-                    e.preventDefault();
-                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
+                if (target.classList.contains('btn-view')) {
                     viewComplaintDetails(complaintId);
                 }
                 
                 // Assign complaint
-                if (e.target.closest('.btn-assign')) {
-                    e.preventDefault();
-                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
+                if (target.classList.contains('btn-assign')) {
                     showAssignModal(complaintId);
                 }
                 
                 // Message resident
-                if (e.target.closest('.btn-message')) {
-                    e.preventDefault();
-                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
-                    const residentEmail = e.target.closest('tr').getAttribute('data-resident-email');
+                if (target.classList.contains('btn-message')) {
                     showMessageModal(complaintId, residentEmail);
                 }
                 
                 // Update status
-                if (e.target.closest('.btn-update')) {
-                    e.preventDefault();
-                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
+                if (target.classList.contains('btn-update')) {
                     showStatusUpdateModal(complaintId);
                 }
                 
                 // Escalate complaint
-                if (e.target.closest('.btn-escalate')) {
-                    e.preventDefault();
-                    const complaintId = e.target.closest('tr').getAttribute('data-complaint-id');
+                if (target.classList.contains('btn-escalate')) {
                     showEscalateModal(complaintId);
+                }
+                
+                // Resolve escalated complaint
+                if (target.classList.contains('btn-resolve-escalated')) {
+                    resolveEscalatedComplaint(complaintId);
                 }
             });
         }
-        
-        // Handle form submissions
-        setupFormHandlers();
     } catch (error) {
         console.error("Error initializing event source:", error);
     }
@@ -709,7 +801,7 @@ function updateUserProfile(user) {
     // Update any other user-specific UI elements
 }
 
-// Load dashboard statistics
+// Load dashboard statistics and update badge counts
 function loadStats() {
     fetch('/officials/stats')
         .then(response => response.json())
@@ -725,28 +817,39 @@ function loadStats() {
                     `${data.avg_resolution_time} days`;
             }
                 
-            // Update sidebar badges
-            const newBadge = document.querySelector('a[href="#new-complaints"] .badge');
-            const pendingBadge = document.querySelector('a[href="#pending"] .badge');
-            const inProgressBadge = document.querySelector('a[href="#in-progress"] .badge');
-            const escalatedBadge = document.querySelector('a[href="#escalated"] .badge');
-            
-            if (newBadge) newBadge.textContent = data.new;
-            if (pendingBadge) pendingBadge.textContent = data.pending;
-            if (inProgressBadge) inProgressBadge.textContent = data.in_progress;
-            
-            // Calculate escalated complaints (these would be marked with escalated=true)
-            const escalatedComplaints = data.escalated || 0;
-            if (escalatedBadge) escalatedBadge.textContent = escalatedComplaints;
+            // Update sidebar badges - fixed to ensure all badges get updated
+            updateBadgeCount('a[href="#all-complaints"] .badge', data.total);
+            updateBadgeCount('a[href="#new-complaints"] .badge', data.new);
+            updateBadgeCount('a[href="#pending"] .badge', data.pending);
+            updateBadgeCount('a[href="#in-progress"] .badge', data.in_progress);
+            updateBadgeCount('a[href="#escalated"] .badge', data.escalated || 0);
+            updateBadgeCount('a[href="#resolved"] .badge', data.resolved);
         })
         .catch(error => {
             console.error('Error loading stats:', error);
         });
 }
 
+// Helper function to update badge counts
+function updateBadgeCount(selector, count) {
+    const badge = document.querySelector(selector);
+    if (badge) {
+        badge.textContent = count;
+        // Add visual feedback for badge count changes
+        badge.style.transition = 'background-color 0.3s ease';
+        badge.style.backgroundColor = '#ff5722';
+        setTimeout(() => {
+            badge.style.backgroundColor = '';
+        }, 1000);
+    }
+}
+
 // Load complaints by status
 function loadComplaints(status) {
-    fetch(`/officials/complaints/${status}`)
+    // Store the current status view in session storage
+    sessionStorage.setItem('currentComplaintView', status);
+    
+    fetch(`/officials/complaints/${status.toLowerCase().replace(' ', '-')}`)
         .then(response => response.json())
         .then(complaints => {
             const tableBody = document.querySelector('.complaints-table tbody');
@@ -754,71 +857,111 @@ function loadComplaints(status) {
             
             tableBody.innerHTML = ''; // Clear current entries
             
-            complaints.forEach(complaint => {
-                const row = document.createElement('tr');
-                row.setAttribute('data-complaint-id', complaint.id);
-                row.setAttribute('data-resident-email', complaint.user_email);
-                
-                // Format date for display
-                const submittedDate = new Date(complaint.submitted_date);
-                const now = new Date();
-                const diffTime = Math.abs(now - submittedDate);
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                let dateDisplay;
-                if (diffDays === 0) {
-                    dateDisplay = 'Today';
-                } else if (diffDays === 1) {
-                    dateDisplay = 'Yesterday';
-                } else {
-                    dateDisplay = `${diffDays} days ago`;
-                }
-                
-                // Create action buttons based on status
-                let actionButtons = `
-                    <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
-                `;
-                
-                if (complaint.status === 'New') {
-                    actionButtons += `
-                        <a href="#assign" class="btn-action btn-assign"><i class="fas fa-user-tag"></i></a>
-                        <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
-                    `;
-                } else if (complaint.status === 'Pending' || complaint.status === 'In Progress') {
-                    actionButtons += `
-                        <a href="#update" class="btn-action btn-update"><i class="fas fa-edit"></i></a>
-                        <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
-                    `;
-                    
-                    if (!complaint.escalated) {
-                        actionButtons += `
-                            <a href="#escalate" class="btn-action btn-escalate"><i class="fas fa-level-up-alt"></i></a>
-                        `;
-                    }
-                }
-                
-                row.innerHTML = `
-                    <td>${complaint.id}</td>
-                    <td>${complaint.category}</td>
-                    <td>${dateDisplay}</td>
-                    <td>${complaint.user_name || 'Resident'}</td>
-                    <td><span class="status ${complaint.status.toLowerCase().replace(' ', '-')}">${complaint.status}</span></td>
-                    <td><span class="urgency ${complaint.urgency.toLowerCase()}">${complaint.urgency}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            ${actionButtons}
+            if (complaints.length === 0) {
+                // Display a message when no complaints match the filter
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="7" class="empty-state">
+                        <div class="empty-message">
+                            <i class="fas fa-inbox"></i>
+                            <p>No ${status === 'all' ? '' : status} complaints found</p>
                         </div>
                     </td>
                 `;
-                
-                tableBody.appendChild(row);
-            });
+                tableBody.appendChild(emptyRow);
+            } else {
+                complaints.forEach(complaint => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-complaint-id', complaint.id);
+                    row.setAttribute('data-resident-email', complaint.user_email);
+                    row.setAttribute('data-status', complaint.status);
+                    
+                    // Format date for display
+                    const submittedDate = new Date(complaint.submitted_date);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - submittedDate);
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    let dateDisplay;
+                    if (diffDays === 0) {
+                        dateDisplay = 'Today';
+                    } else if (diffDays === 1) {
+                        dateDisplay = 'Yesterday';
+                    } else {
+                        dateDisplay = `${diffDays} days ago`;
+                    }
+                    
+                    // Create action buttons based on status
+                    let actionButtons = `
+                        <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
+                    `;
+                    
+                    // Always include the update button regardless of status
+                    actionButtons += `<a href="#update" class="btn-action btn-update"><i class="fas fa-edit"></i></a>`;
+                    
+                    if (complaint.status === 'New') {
+                        actionButtons += `
+                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                        `;
+                    } else if (complaint.status === 'Pending Review' || complaint.status === 'In Progress') {
+                        actionButtons += `
+                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                        `;
+                        
+                        if (!complaint.escalated) {
+                            actionButtons += `
+                                <a href="#escalate" class="btn-action btn-escalate"><i class="fas fa-level-up-alt"></i></a>
+                            `;
+                        }
+                    } else if (complaint.status === 'Escalated') {
+                        actionButtons += `
+                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                        `;
+                    } else if (complaint.status === 'Resolved') {
+                        actionButtons += `
+                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                        `;
+                    }
+                    
+                    row.innerHTML = `
+                        <td>${complaint.id}</td>
+                        <td>${complaint.category}</td>
+                        <td>${dateDisplay}</td>
+                        <td>${complaint.user_name || 'Resident'}</td>
+                        <td><span class="status ${complaint.status.toLowerCase().replace(' ', '-')}">${complaint.status}</span></td>
+                        <td><span class="urgency ${complaint.urgency.toLowerCase()}">${complaint.urgency}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                ${actionButtons}
+                            </div>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
             
             // Update heading to reflect the status
             const sectionHeader = document.querySelector('.content-area .section-header h2');
             if (sectionHeader) {
                 const statusText = status === 'all' ? 'All' : status;
                 sectionHeader.innerHTML = `<i class="fas fa-list"></i> ${statusText} Complaints`;
+            }
+            
+            // Highlight the active filter in sidebar
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.querySelectorAll('a').forEach(a => {
+                    a.classList.remove('active');
+                    let href = a.getAttribute('href');
+                    if ((status === 'all' && href === '#all-complaints') ||
+                        (status === 'New' && href === '#new-complaints') ||
+                        (status === 'Pending Review' && href === '#pending') ||
+                        (status === 'In Progress' && href === '#in-progress') ||
+                        (status === 'Resolved' && href === '#resolved')) {
+                        a.classList.add('active');
+                    }
+                });
             }
         })
         .catch(error => {
@@ -828,60 +971,87 @@ function loadComplaints(status) {
 
 // Load only escalated complaints
 function loadEscalatedComplaints() {
-    fetch('/officials/complaints/all')
+    // Store the current status view
+    sessionStorage.setItem('currentComplaintView', 'Escalated');
+    
+    fetch('/officials/complaints/escalated')
         .then(response => response.json())
         .then(complaints => {
-            // Filter for escalated complaints
-            const escalatedComplaints = complaints.filter(c => c.escalated === true);
-            
             const tableBody = document.querySelector('.complaints-table tbody');
             if (!tableBody) return;
             
             tableBody.innerHTML = ''; // Clear current entries
             
-            escalatedComplaints.forEach(complaint => {
-                const row = document.createElement('tr');
-                row.setAttribute('data-complaint-id', complaint.id);
-                row.setAttribute('data-resident-email', complaint.user_email);
-                
-                // Format date for display
-                const submittedDate = new Date(complaint.submitted_date);
-                const now = new Date();
-                const diffTime = Math.abs(now - submittedDate);
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                let dateDisplay;
-                if (diffDays === 0) {
-                    dateDisplay = 'Today';
-                } else if (diffDays === 1) {
-                    dateDisplay = 'Yesterday';
-                } else {
-                    dateDisplay = `${diffDays} days ago`;
-                }
-                
-                row.innerHTML = `
-                    <td>${complaint.id}</td>
-                    <td>${complaint.category}</td>
-                    <td>${dateDisplay}</td>
-                    <td>${complaint.user_name || 'Resident'}</td>
-                    <td><span class="status escalated">Escalated</span></td>
-                    <td><span class="urgency ${complaint.urgency.toLowerCase()}">${complaint.urgency}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
-                            <a href="#resolve-escalated" class="btn-action btn-resolve-escalated"><i class="fas fa-check-circle"></i></a>
-                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+            if (complaints.length === 0) {
+                // Display a message when no escalated complaints found
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `
+                    <td colspan="7" class="empty-state">
+                        <div class="empty-message">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>No escalated complaints found</p>
                         </div>
                     </td>
                 `;
-                
-                tableBody.appendChild(row);
-            });
+                tableBody.appendChild(emptyRow);
+            } else {
+                complaints.forEach(complaint => {
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-complaint-id', complaint.id);
+                    row.setAttribute('data-resident-email', complaint.user_email);
+                    row.setAttribute('data-status', 'Escalated');
+                    
+                    // Format date for display
+                    const submittedDate = new Date(complaint.submitted_date);
+                    const now = new Date();
+                    const diffTime = Math.abs(now - submittedDate);
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    let dateDisplay;
+                    if (diffDays === 0) {
+                        dateDisplay = 'Today';
+                    } else if (diffDays === 1) {
+                        dateDisplay = 'Yesterday';
+                    } else {
+                        dateDisplay = `${diffDays} days ago`;
+                    }
+                    
+                    // Ensure message and update buttons remain for escalated complaints
+                    row.innerHTML = `
+                        <td>${complaint.id}</td>
+                        <td>${complaint.category}</td>
+                        <td>${dateDisplay}</td>
+                        <td>${complaint.user_name || 'Resident'}</td>
+                        <td><span class="status escalated">Escalated</span></td>
+                        <td><span class="urgency ${complaint.urgency.toLowerCase()}">${complaint.urgency}</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
+                                <a href="#update" class="btn-action btn-update"><i class="fas fa-edit"></i></a>
+                                <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                            </div>
+                        </td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+            }
             
             // Update heading
             const sectionHeader = document.querySelector('.content-area .section-header h2');
             if (sectionHeader) {
                 sectionHeader.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Escalated Complaints`;
+            }
+            
+            // Highlight the active filter in sidebar
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) {
+                sidebar.querySelectorAll('a').forEach(a => {
+                    a.classList.remove('active');
+                    if (a.getAttribute('href') === '#escalated') {
+                        a.classList.add('active');
+                    }
+                });
             }
         })
         .catch(error => {
@@ -891,32 +1061,203 @@ function loadEscalatedComplaints() {
 
 // View complaint details
 function viewComplaintDetails(complaintId) {
+    // In a real application, you would fetch the complaint details from the server
+    // and display them in a modal or new page
     alert(`View details for complaint: ${complaintId}`);
 }
 
 // Show modal to assign complaint to an official
 function showAssignModal(complaintId) {
+    // In a real application, you would populate a modal with officials to assign to
     alert(`Assign complaint: ${complaintId}`);
 }
 
 // Show modal to message a resident
 function showMessageModal(complaintId, residentEmail) {
+    // In a real application, you would populate a modal with message form
     alert(`Message resident regarding complaint: ${complaintId}`);
 }
 
 // Show modal to update complaint status
 function showStatusUpdateModal(complaintId) {
-    alert(`Update status for complaint: ${complaintId}`);
+    const modal = document.getElementById("status-update-modal");
+    if (!modal) return;
+    
+    // Set complaint ID in hidden field
+    const complaintIdField = document.getElementById("complaint-id");
+    if (complaintIdField) {
+        complaintIdField.value = complaintId;
+    }
+    
+    // Reset form fields
+    const statusSelect = document.getElementById("status");
+    const statusNotes = document.getElementById("status-notes");
+    
+    if (statusSelect) statusSelect.selectedIndex = 0;
+    if (statusNotes) statusNotes.value = '';
+    
+    // Show the modal
+    modal.style.display = "block";
+    document.body.style.overflow = "hidden";
 }
 
 // Show modal to escalate a complaint
 function showEscalateModal(complaintId) {
-    alert(`Escalate complaint: ${complaintId}`);
+    // In a real application, you would show an escalation form
+    if (confirm(`Are you sure you want to escalate complaint ${complaintId}?`)) {
+        updateComplaintStatus(complaintId, 'Escalated', 'Escalated to higher authorities', true);
+    }
 }
 
-// Setup form submission handlers
-function setupFormHandlers() {
-    // These would be the form submission handlers for the various modals
+// Resolve an escalated complaint
+function resolveEscalatedComplaint(complaintId) {
+    if (confirm(`Are you sure you want to resolve escalated complaint ${complaintId}?`)) {
+        updateComplaintStatus(complaintId, 'Resolved', 'Resolved from escalation', true);
+    }
+}
+
+// Update complaint status in UI and (in a real app) on the server
+function updateComplaintStatus(complaintId, newStatus, notes, notifyResident) {
+    // In a real application, you would send this to the server
+    console.log(`Updating complaint ${complaintId} to ${newStatus}`);
+    console.log(`Notes: ${notes}`);
+    console.log(`Notify resident: ${notifyResident}`);
+    
+    // Mock API call
+    fetch('/officials/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            complaint_id: complaintId,
+            status: newStatus,
+            action_note: notes,
+            notify_resident: notifyResident
+        })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to update status');
+        return response.json();
+    })
+    .then(data => {
+        // Success! Update the UI
+        const row = document.querySelector(`tr[data-complaint-id="${complaintId}"]`);
+        
+        if (row) {
+            // Get the current view from session storage
+            const currentView = sessionStorage.getItem('currentComplaintView') || 'all';
+            
+            // If we're not viewing "All Complaints" and the status has changed to something 
+            // that doesn't match the current filter, we need to remove the row
+            if (currentView !== 'all' && currentView !== newStatus) {
+                // Remove the row with animation
+                row.style.transition = "opacity 0.5s";
+                row.style.opacity = "0";
+                setTimeout(() => {
+                    row.remove();
+                    
+                    // Check if there are no complaints left and show empty state if needed
+                    const tableBody = document.querySelector('.complaints-table tbody');
+                    if (tableBody && tableBody.querySelectorAll('tr:not(.empty-state)').length === 0) {
+                        const emptyRow = document.createElement('tr');
+                        emptyRow.className = 'empty-state';
+                        emptyRow.innerHTML = `
+                            <td colspan="7">
+                                <div class="empty-message">
+                                    <i class="fas fa-inbox"></i>
+                                    <p>No ${currentView === 'all' ? '' : currentView} complaints found</p>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(emptyRow);
+                    }
+                }, 500);
+            } else {
+                // Update status cell
+                const statusCell = row.querySelector('td:nth-child(5)');
+                if (statusCell) {
+                    statusCell.innerHTML = `<span class="status ${newStatus.toLowerCase().replace(' ', '-')}">${newStatus}</span>`;
+                }
+                
+                // Update data-status attribute
+                row.setAttribute('data-status', newStatus);
+                
+                // Update action buttons - always include update button
+                const actionsCell = row.querySelector('td:last-child');
+                if (actionsCell) {
+                    let actionButtons = `
+                        <a href="#view" class="btn-action btn-view"><i class="fas fa-eye"></i></a>
+                        <a href="#update" class="btn-action btn-update"><i class="fas fa-edit"></i></a>
+                    `;
+                    
+                    if (newStatus === 'New') {
+                        actionButtons += `
+                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                        `;
+                    } else if (newStatus === 'Pending Review' || newStatus === 'In Progress') {
+                        actionButtons += `
+                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                        `;
+                        
+                        if (newStatus !== 'Escalated') {
+                            actionButtons += `
+                                <a href="#escalate" class="btn-action btn-escalate"><i class="fas fa-level-up-alt"></i></a>
+                            `;
+                        }
+                    } else if (newStatus === 'Escalated') {
+                        actionButtons += `
+                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                        `;
+                    } else if (newStatus === 'Resolved') {
+                        actionButtons += `
+                            <a href="#message" class="btn-action btn-message"><i class="fas fa-envelope"></i></a>
+                        `;
+                    }
+                    
+                    actionsCell.innerHTML = `<div class="action-buttons">${actionButtons}</div>`;
+                }
+            }
+        }
+        
+        // Add notification
+        const notification = document.createElement('div');
+        notification.className = 'notification-toast success';
+        notification.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            <span>Complaint ${complaintId} status updated to ${newStatus}</span>
+            <button class="close-toast">&times;</button>
+        `;
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 500);
+        }, 3000);
+        
+        // Refresh stats and badge counts
+        loadStats();
+    })
+    .catch(error => {
+        console.error('Error updating complaint status:', error);
+        
+        // Show error notification
+        const notification = document.createElement('div');
+        notification.className = 'notification-toast error';
+        notification.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i>
+            <span>Failed to update complaint status: ${error.message}</span>
+            <button class="close-toast">&times;</button>
+        `;
+        document.body.appendChild(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('fade-out');
+            setTimeout(() => notification.remove(), 500);
+        }, 3000);
+    });
 }
 
 // Update dashboard with real-time data
@@ -924,15 +1265,61 @@ function updateDashboard(complaints) {
     // Refresh stats
     loadStats();
     
-    // Refresh the current view
-    // This could be more sophisticated by checking which view is active
-    loadComplaints('all');
+    // Get current active view
+    const sectionHeader = document.querySelector('.content-area .section-header h2');
+    if (sectionHeader) {
+        const headerText = sectionHeader.textContent;
+        if (headerText.includes('All')) {
+            loadComplaints('all');
+        } else if (headerText.includes('New')) {
+            loadComplaints('New');
+        } else if (headerText.includes('Pending')) {
+            loadComplaints('Pending Review');
+        } else if (headerText.includes('In Progress')) {
+            loadComplaints('In Progress');
+        } else if (headerText.includes('Escalated')) {
+            loadEscalatedComplaints();
+        } else if (headerText.includes('Resolved')) {
+            loadComplaints('Resolved');
+        } else {
+            loadComplaints('all');
+        }
+    } else {
+        loadComplaints('all');
+    }
 }
+
+// Add CSS selector polyfill for older browsers
+if (!Element.prototype.matches) {
+    Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
+}
+
+if (!Element.prototype.closest) {
+    Element.prototype.closest = function(s) {
+        var el = this;
+        do {
+            if (el.matches(s)) return el;
+            el = el.parentElement || el.parentNode;
+        } while (el !== null && el.nodeType === 1);
+        return null;
+    };
+}
+
+// Close toast notifications when clicking the close button
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('close-toast')) {
+        const toast = e.target.closest('.notification-toast');
+        if (toast) {
+            toast.classList.add('fade-out');
+            setTimeout(() => toast.remove(), 500);
+        }
+    }
+});
 
 // Start the application
 document.addEventListener("DOMContentLoaded", function() {
     initializeApp();
 });
-    </script>
+</script>
 </body>
 </html>

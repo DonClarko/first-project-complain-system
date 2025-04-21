@@ -583,3 +583,37 @@ def resolve_escalated():
             return jsonify({'success': True})
     
     return jsonify({'success': False, 'error': 'Complaint not found or not escalated'}), 404
+
+@complaint_bp.route('/resident/stats')
+@login_required
+def get_resident_stats():
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({'error': 'Unauthorized'}), 401
+    complaints = load_complaints()
+    user_complaints = [c for c in complaints if c.get('user_email') == user_email]
+    stats = {
+        'open_cases': 0,
+        'urgent_open': 0,
+        'resolved': 0,
+        'avg_resolution': 0,
+        'resolution_times': []
+    }
+    for complaint in user_complaints:
+        if complaint['status'] != 'Resolved':
+            stats['open_cases'] += 1
+            if complaint['urgency'] == 'High':
+                stats['urgent_open'] += 1
+        else:
+            stats['resolved'] += 1
+            submitted = datetime.fromisoformat(complaint['submitted_date'])
+            resolved = datetime.fromisoformat(
+                next(update['timestamp'] for update in reversed(complaint['updates']) 
+                     if update['to_status'] == 'Resolved')
+            )
+            stats['resolution_times'].append((resolved - submitted).days)
+    stats['avg_resolution'] = round(
+        sum(stats['resolution_times']) / len(stats['resolution_times']) if stats['resolution_times'] else 0, 
+        1
+    )
+    return jsonify(stats)

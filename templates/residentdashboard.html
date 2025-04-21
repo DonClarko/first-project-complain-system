@@ -56,20 +56,24 @@
                     <i class="fas fa-plus-circle"></i> Submit New Complaint
                 </a>
             </div>
-            <div class="quick-stats">
-                <div class="stat-card">
-                    <h3>Open Cases</h3>
-                    <p class="stat-number">28</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Resolved</h3>
-                    <p class="stat-number">89</p>
-                </div>
-                <div class="stat-card">
-                    <h3>Avg. Resolution</h3>
-                    <p class="stat-number">5.2 days</p>
-                </div>
-            </div>
+<!-- Updated Quick Stats Section -->
+<div class="quick-stats">
+    <div class="stat-card">
+        <h3>Open Cases</h3>
+        <p class="stat-number">0</p>
+        <p class="stat-urgent"><i class="fas fa-exclamation-triangle"></i> <span class="urgent-count">0</span> urgent</p>
+    </div>
+    <div class="stat-card">
+        <h3>Resolved</h3>
+        <p class="stat-number">0</p>
+        <p class="stat-change"><i class="fas fa-arrow-up"></i> <span class="resolved-change">0</span>% from last month</p>
+    </div>
+    <div class="stat-card">
+        <h3>Avg. Resolution</h3>
+        <p class="stat-number">0 days</p>
+        <p class="stat-change"><i class="fas fa-arrow-down"></i> <span class="resolution-change">0</span> days improvement</p>
+    </div>
+</div>
         </section>
 
         <!-- Recent Complaints Section -->
@@ -435,6 +439,24 @@
 
     <script>
 document.addEventListener("DOMContentLoaded", function() {
+    function loadStats() {
+    fetch('/resident/stats')
+        .then(response => response.json())
+        .then(data => {
+            // Update Open Cases
+            document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = data.open_cases;
+            document.querySelector('.stat-card:nth-child(1) .urgent-count').textContent = data.urgent_open;
+
+            // Update Resolved
+            document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = data.resolved;
+            
+            // Update Avg. Resolution
+            const avgResElement = document.querySelector('.stat-card:nth-child(3) .stat-number');
+            avgResElement.textContent = `${data.avg_resolution} days`;
+        })
+        .catch(error => console.error('Error loading stats:', error));
+}
+    loadStats();
     // Modal control
     const complaintModal = document.getElementById("complaint-modal");
     const feedbackModal = document.getElementById("feedback-modal");

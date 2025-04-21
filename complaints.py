@@ -184,18 +184,22 @@ def get_complaint_details():
     try:
         complaint_id = request.args.get('id')
         user_email = session.get('user_email')
+        user_role = session.get('user_role')  # Make sure you're storing role in session
         
-        if not complaint_id or not user_email:
+        if not complaint_id:
             return jsonify({'error': 'Invalid request'}), 400
         
-        # Load all complaints
         all_complaints = load_complaints()
         
-        # Find the specific complaint for this user
-        complaint = next((c for c in all_complaints if c['id'] == complaint_id and c['user_email'] == user_email), None)
+        # For officials, show any complaint regardless of owner
+        if user_role == 'official':
+            complaint = next((c for c in all_complaints if c['id'] == complaint_id), None)
+        else:
+            # For residents, maintain original security check
+            complaint = next((c for c in all_complaints if c['id'] == complaint_id and c['user_email'] == user_email), None)
         
         if not complaint:
-            return jsonify({'error': 'Complaint not found or access denied'}), 404
+            return jsonify({'error': 'Complaint not found'}), 404
         
         return jsonify(complaint)
         

@@ -441,7 +441,95 @@
         </div>
     </div>
 
+    <!-- Complaint Details Modal -->
+<div id="complaint-details-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <div id="complaint-details-content">
+            <!-- Content will be loaded here dynamically -->
+        </div>
+    </div>
+</div>
+
 <script>
+
+    // View Complaint Details Functionality
+document.addEventListener('click', function(e) {
+    // Handle View Details click in table
+    if (e.target.closest('.btn-view')) {
+        e.preventDefault();
+        const row = e.target.closest('tr');
+        const complaintId = row.querySelector('td:first-child').textContent;
+        showComplaintDetails(complaintId);
+    }
+});
+
+async function showComplaintDetails(complaintId) {
+    try {
+        const response = await fetch(`/complaint/details?id=${complaintId}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch complaint details');
+        const complaint = await response.json();
+
+        const detailsContent = document.getElementById('complaint-details-content');
+        detailsContent.innerHTML = `
+            <h2>Complaint Details - ${complaint.id}</h2>
+            <div class="complaint-details-card">
+                <div class="detail-row">
+                    <p><strong>Status:</strong> <span class="status ${complaint.status.toLowerCase().replace(' ', '-')}">${complaint.status}</span></p>
+                    <p><strong>Urgency:</strong> <span class="urgency ${complaint.urgency.toLowerCase()}">${complaint.urgency}</span></p>
+                </div>
+                <div class="detail-row">
+                    <p><strong>Submitted by:</strong> ${complaint.user_name}</p>
+                    <p><strong>Submitted on:</strong> ${new Date(complaint.submitted_date).toLocaleDateString()}</p>
+                </div>
+                <div class="detail-row">
+                    <p><strong>Category:</strong> ${complaint.category}</p>
+                    <p><strong>Location:</strong> ${complaint.location}</p>
+                </div>
+                <div class="detail-row">
+                    <h3>Description</h3>
+                    <p>${complaint.description}</p>
+                </div>
+                ${complaint.updates?.length ? `
+                <div class="detail-row">
+                    <h3>Update History</h3>
+                    <div class="update-history">
+                        ${complaint.updates.map(update => `
+                            <div class="update-item">
+                                <p><strong>${new Date(update.timestamp).toLocaleString()}</strong></p>
+                                <p>Status changed from ${update.from_status} to ${update.to_status}</p>
+                                ${update.action_note ? `<p>Notes: ${update.action_note}</p>` : ''}
+                                <p>Updated by: ${update.by_official || 'System'}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>` : ''}
+                <div class="detail-actions">
+                    <button class="btn-secondary close-details">Close</button>
+                </div>
+            </div>
+        `;
+
+        const modal = document.getElementById('complaint-details-modal');
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+
+        detailsContent.querySelector('.close-details')?.addEventListener('click', () => {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+    } catch (error) {
+        console.error('Error loading complaint details:', error);
+        alert('Failed to load complaint details. Please try again.');
+    }
+}
 document.addEventListener("DOMContentLoaded", function() {
     // Mobile menu toggle
     const mobileMenuToggle = document.querySelector(".mobile-menu-toggle");
@@ -1138,7 +1226,8 @@ function showNotification(type, message) {
 
 // View complaint details
 function viewComplaintDetails(complaintId) {
-    window.location.href = `/officials/complaint/${complaintId}`;
+    // Instead of navigating to a new page, use the existing modal functionality
+    showComplaintDetails(complaintId);
 }
 
 // Show modal to assign complaint to an official
